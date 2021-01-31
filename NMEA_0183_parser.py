@@ -18,7 +18,13 @@ class NMEA_parser:
         """
         initializer of the class, sets the amount of errors to 0.
         """
-        self.__parser_error_count = 0   
+        self.__parser_error_count = 0
+        self.__data_types = {"MTW":"Mean Temprature Water","DPT":"Depth of water",
+                             "DBT":"Depth below Transducer","GGA":"Global Positions System fix data","GLL":"Geographic possition - Langitude/Logitude",
+                             "GSV":"Satelites in view","HDM":"Heading, magnetic","HDT":"Heading, True",
+                             "LTW":"Distance traveld throug water","MWD":"Wind direction and speed","MWV":"Wind speed and angle",
+                             "RMC":"Recomended Minimum Navigation Information","HDG":"Heding -Deviation and Variation","RSA":"Rudder sensor angle","VHW":"Water Speed and heading",
+                             "VTG":"Track made good and ground speed","VWR":"Relative wind speed and angle", "XDR":"Transducer values","ZDA":"Time and Date- UTC, d m y local time zone"}
         
         
     def parse_nmea_sentence(self,sentence):
@@ -48,9 +54,11 @@ class NMEA_parser:
         """
         try:
             parsed_sentence= pynmea2.parse(sentence)
-            parsed_json = json.dumps({"sensor:" :parsed_sentence.talker,
-                                      "type"    :parsed_sentence.sentence_type,
-                                      "data"    :parsed_sentence.data})
+        
+            data  = self.__clean_data(parsed_sentence.data)
+            data_id = self.__get_data_type(parsed_sentence.sentence_type)
+            parsed_json = {data_id:data}
+            
             return parsed_json
         
         except pynmea2.ParseError as e:
@@ -104,8 +112,19 @@ class NMEA_parser:
         """
         return self.__parser_error_count
     
+    def __clean_data(self, data):
+        
+        return [None if not v else float(v) if all((c in set('1234567890.')) for c in v) else v for v in data] 
+    def __get_data_type(self, identifier):
+        if identifier in self.__data_types:
+            return self.__data_types[identifier]
+        else:return "%s: %s \n"%("unknow ID",identifier)
 a = NMEA_parser()
 print(a.parse_raw_message("/n/n None^d$YXMTW,25.6,C*13"))
 print(a.parse_raw_message("Z/#m$SDDPT,,*57"))
+print(a.parse_raw_message("12312__1@£€6{{[6[]$YXMTW,25.6,C*13"))
+
+print(a.parse_raw_message("12312__1@£€6{{[6[]$YXMTW,25.6,C*13"))
+
 print(a.parse_raw_message("12312__1@£€6{{[6[]$YXMTW,25.6,C*13"))
         

@@ -11,11 +11,11 @@ import time
 import serial
 import json
 
-class NMEA_server:
+class server():
     """
     This class receives and parses NMEA 0183 messages from a serial port. 
     """
-    def ___init___(self,port):
+    def __init__(self,port,baudrate):
         """
         initalizer, defines the serial port and parser and other variables and
         constants.
@@ -29,7 +29,7 @@ class NMEA_server:
         self.FILE = "D:\ROV_BATCHELOR\Code\Arduino\echo_sounder\EchoData_parsed.txt"
         self.__parser = NMEA_parser()
         self.__ser = serial.Serial(port,
-                                   4800, 
+                                   baudrate, 
                                    timeout=1, 
                                    stopbits=1, 
                                    bytesize=8)
@@ -96,8 +96,8 @@ class NMEA_server:
 
         """
         try:
-            #get data from USB
-            if self.__ready():
+            #get data from USBclass server():
+            if self.ready():
                 time_now = self.get_current_time_str()
                 
                 data = self.__sio.readline()
@@ -157,3 +157,4 @@ class NMEA_server:
 
         """
         return self.ser.inWaiting() >10
+    

@@ -22,10 +22,12 @@ class Storage_Box():
         
         def get(self):
             return self.__json_data
+        def get_str(self):
+            return json.dumps(self.__json_data)
 
         
 data = {"sensor":"SD","type": "DBT", "data": {"M":100,"f":100,"CS":32}}
 a = Storage_Box({"DBT","DPT","MTW","GPS"})
 a.update(data)
 print(a.get_sensor('DBT'))
-print(a.get())
+print(a.get_str())

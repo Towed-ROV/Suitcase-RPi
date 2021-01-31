@@ -1,7 +1,7 @@
 import serial
 import time
 from threading import Thread
-class SerialWriter(Thread):
+class Serial_Writer(Thread):
     def __init__(self, com_port, baud_rate):
         Thread.__init__(self)
         self.com_port = com_port
