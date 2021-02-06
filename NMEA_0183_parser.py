@@ -12,7 +12,7 @@ class NMEA_parser:
     the NMEA parser can take a string input and return a more meaningful 
     version of the data.
     """
-    def __init__(self,parser):
+    def __init__(self):
         """
         initializer of the class, sets the amount of errors to 0.
         """
@@ -35,6 +35,7 @@ class NMEA_parser:
                               "VTG":"Track_made_good_and_ground_speed",
                               "VWR":"Relative_wind_speed_and_angle",
                               "XDR":"Transducer_values",
+                              "GSA":"GPS_and_DOP_and_active_satalites",
                               "ZDA":"Time_and_Date-_UTC,_d_m_y_local_time_zone"}
         
         
@@ -135,8 +136,11 @@ class NMEA_parser:
        ordered_data = {}
        for i,v in enumerate(data):
            if v and type(v) is not str:
-               ordered_data[data[i+1]] = v
-      
+               if type(data[i+1]) is str:
+                   ordered_data[data[i+1]] = v
+               else:
+                    ordered_data["value_%s"%(i)]=v
+                    
        return ordered_data
        
        

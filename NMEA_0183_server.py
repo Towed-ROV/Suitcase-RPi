@@ -33,7 +33,8 @@ class server():
                                    stopbits=1, 
                                    bytesize=8)
         self.__sio = TextIOWrapper(BufferedRWPair(self.__ser,
-                                                  self.__ser))
+                                                  self.__ser),
+                                   encoding = 'ascii')
         self.START_TIME = ""
         self.com_err = 0
         
@@ -97,8 +98,6 @@ class server():
         try:
             #get data from USBclass server():
             if self.ready():
-                time_now = self.get_current_time_str()
-                
                 data = self.__sio.readline()
                 #tries to parse the message, if an error ocours the method
                 #exits and prints the message.
@@ -108,9 +107,8 @@ class server():
                     print(format(e))
                     return
                         
-                
                 #return parsed data
-                return "%s : %s \n"%(time_now,parsed_data)
+                return parsed_data
         except serial.SerialException as e:
             print('communication error: ', format(e))
             time.sleep(0.5)
@@ -118,7 +116,13 @@ class server():
             if self.com_err < 5:
                 return self.get_message()
             else: raise e
-            
+        except UnicodeDecodeError as e:
+            print('decode error: ', format(e))
+            time.sleep(0.5)
+            self.com_err += 1 
+            if self.com_err < 5:
+                return self.get_message()
+            else: raise e
     def __save_to_file(self,sentence,file):
         """
         saves a sentence to a speicifed file
@@ -155,5 +159,5 @@ class server():
             otherwise.
 
         """
-        return self.ser.inWaiting() >10
+        return self.__ser.inWaiting() >10
     

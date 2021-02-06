@@ -19,5 +19,5 @@ while True:
     box.update(echo_server.get_message())
     box.update(GPS_server.get_message())
     
-    out.write_serial_data(box.get_str())
+    out.write_serial_data(box.get_in_old_style())
     

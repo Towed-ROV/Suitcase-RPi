@@ -29,6 +29,8 @@ class Storage_Box():
             None.
 
             """
+            if not data:
+                return
             for keys in data:
                 self.__json_data[keys] = data[keys]
                 
@@ -89,7 +91,7 @@ class Storage_Box():
             ret_lst = []
             for k in self.keys():
                 ret_lst.append(self.get_sensor_old(k))
-            return ret_lst
+            return json.dumps(ret_lst)
                     
         def get(self):
             """
@@ -127,7 +129,7 @@ class Storage_Box():
     
 #____________________NMEA PARSER
 p = parser() 
-a = NMEA_parser(p)
+a = NMEA_parser()
 b = Storage_Box()
 
 msg1= a.parse_raw_message("Z/#m$SDDPT,,*57")
