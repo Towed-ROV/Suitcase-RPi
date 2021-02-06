@@ -1,6 +1,4 @@
 import pynmea2
-import json
-    
 """
 Created on Wed Jan 27 2021
 
@@ -14,17 +12,30 @@ class NMEA_parser:
     the NMEA parser can take a string input and return a more meaningful 
     version of the data.
     """
-    def __init__(self):
+    def __init__(self,parser):
         """
         initializer of the class, sets the amount of errors to 0.
         """
         self.__parser_error_count = 0
-        self.__data_types = {"MTW":"Mean Temprature Water","DPT":"Depth of water",
-                             "DBT":"Depth below Transducer","GGA":"Global Positions System fix data","GLL":"Geographic possition - Langitude/Logitude",
-                             "GSV":"Satelites in view","HDM":"Heading, magnetic","HDT":"Heading, True",
-                             "LTW":"Distance traveld throug water","MWD":"Wind direction and speed","MWV":"Wind speed and angle",
-                             "RMC":"Recomended Minimum Navigation Information","HDG":"Heding -Deviation and Variation","RSA":"Rudder sensor angle","VHW":"Water Speed and heading",
-                             "VTG":"Track made good and ground speed","VWR":"Relative wind speed and angle", "XDR":"Transducer values","ZDA":"Time and Date- UTC, d m y local time zone"}
+        self.__data_types = { "MTW":"Mean_Temprature_Water",
+                              "DPT":"Depth_of_water",
+                              "DBT":"Depth_below_Transducer",
+                              "GGA":"Global_Positions_System_fix_data",
+                              "GLL":"Geographic_possition_-_Langitude/Logitude",
+                              "GSV":"Satelites_in_view",
+                              "HDM":"Heading,_magnetic",
+                              "HDT":"Heading,_True",
+                              "LTW":"Distance_traveld_throug_water",
+                              "MWD":"Wind_direction_and_speed",
+                              "MWV":"Wind_speed_and_angle",
+                              "RMC":"Recomended_Minimum_Navigation_Information",
+                              "HDG":"Heding_-Deviation_and_Variation",
+                              "RSA":"Rudder_sensor_angle",
+                              "VHW":"Water_Speed_and_heading",
+                              "VTG":"Track_made_good_and_ground_speed",
+                              "VWR":"Relative_wind_speed_and_angle",
+                              "XDR":"Transducer_values",
+                              "ZDA":"Time_and_Date-_UTC,_d_m_y_local_time_zone"}
         
         
     def parse_nmea_sentence(self,sentence):
@@ -55,9 +66,9 @@ class NMEA_parser:
         try:
             parsed_sentence= pynmea2.parse(sentence)
         
-            data  = self.__clean_data(parsed_sentence.data)
+            data  = self.__order_data(self.__clean_data(parsed_sentence.data))
             data_id = self.__get_data_type(parsed_sentence.sentence_type)
-            parsed_json = {data_id:data}
+            parsed_json = {"%s_%s"%(data_id,k):v for k,v in data.items()}
             
             return parsed_json
         
@@ -113,18 +124,20 @@ class NMEA_parser:
         return self.__parser_error_count
     
     def __clean_data(self, data):
-        
         return [None if not v else float(v) if all((c in set('1234567890.')) for c in v) else v for v in data] 
+    
     def __get_data_type(self, identifier):
         if identifier in self.__data_types:
             return self.__data_types[identifier]
         else:return "%s: %s \n"%("unknow ID",identifier)
-a = NMEA_parser()
-print(a.parse_raw_message("/n/n None^d$YXMTW,25.6,C*13"))
-print(a.parse_raw_message("Z/#m$SDDPT,,*57"))
-print(a.parse_raw_message("12312__1@£€6{{[6[]$YXMTW,25.6,C*13"))
-
-print(a.parse_raw_message("12312__1@£€6{{[6[]$YXMTW,25.6,C*13"))
-
-print(a.parse_raw_message("12312__1@£€6{{[6[]$YXMTW,25.6,C*13"))
         
+    def __order_data(self, data):
+       ordered_data = {}
+       for i,v in enumerate(data):
+           if v and type(v) is not str:
+               ordered_data[data[i+1]] = v
+      
+       return ordered_data
+       
+       
+       

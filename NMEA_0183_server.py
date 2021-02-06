@@ -9,7 +9,6 @@ from NMEA_0183_parser import NMEA_parser
 from io import TextIOWrapper, BufferedRWPair
 import time
 import serial
-import json
 
 class server():
     """
