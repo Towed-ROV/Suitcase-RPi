@@ -14,10 +14,10 @@ GPS_server = in_server("/dev/ttyAMA2",9600)
 
 out = out_server("/dev/ttyAMA1",9600)
 
-box = Storage_Box()
+box = Storage_Box("suitcase")
 while True:
     box.update(echo_server.get_message())
     box.update(GPS_server.get_message())
-    
+    print(box.get())
     out.write_serial_data(box.get_in_old_style())
     

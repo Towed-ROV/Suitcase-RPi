@@ -32,9 +32,9 @@ class server():
                                    timeout=1, 
                                    stopbits=1, 
                                    bytesize=8)
-        self.__sio = TextIOWrapper(BufferedRWPair(self.__ser,
-                                                  self.__ser),
-                                   encoding = 'ascii')
+#         self.__sio = TextIOWrapper(BufferedRWPair(self.__ser,
+#                                                   self.__ser),
+#                                    encoding = 'ascii')
         self.SERVER_START = ""
         self.com_err = 0
         
@@ -47,7 +47,7 @@ class server():
         -------
         string
             returns a string with the current time in the format ss:mm:tt.
-
+__ser
         """
         timer = time.localtime()
         return "%i:%i:%i"%(timer.tm_sec,  timer.tm_min, timer.tm_hour)
@@ -72,12 +72,10 @@ class server():
         self.set_start_time()
         self.__save_to_file( "\n Server started: %s \n" % ( self.SERVER_START), 
                                                             self.FILE)
-    
         while True:
             sentence = self.get_message()
-            if len(sentence) > 1 :
+            if len(sente__sernce) > 1 :
                 self.__save_to_file(sentence, self.FILE)
-           
     def get_message(self):
         """
         gets a message from the serial port, parses it and returns the parsed
@@ -97,8 +95,10 @@ class server():
         """
         try:
             #get data from USBclass server():
-            if self.ready():
-                data = self.__sio.readline()
+            if self.ready():    
+                data = str(self.__ser.readline())
+                
+                #data = self.__sio.readline()
                 #tries to parse the message, if an error ocours the method
                 #exits and prints the message.
                 try:
@@ -112,7 +112,10 @@ class server():
         except serial.SerialException as e:
             print('communication error: ', format(e))
             time.sleep(0.5)
+            time.sleep(0.5)
+            time.sleep(0.5)
             self.com_err += 1 
+            
             if self.com_err < 5:
                 return self.get_message()
             else: raise e
@@ -122,7 +125,7 @@ class server():
             self.com_err += 1 
             if self.com_err < 5:
                 return self.get_message()
-            else: raise e
+            raise e
     def __save_to_file(self,sentence,file):
         """
         saves a sentence to a speicifed file

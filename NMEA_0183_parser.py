@@ -90,6 +90,7 @@ class NMEA_parser:
         """
         try:
             parsed_sentence= pynmea2.parse(sentence)
+            
             msg_type = parsed_sentence.sentence_type
             data  = self.__order_data(self.__clean_data(parsed_sentence.data),msg_type)
             data_id = self.__get_data_type(msg_type)
@@ -123,13 +124,15 @@ class NMEA_parser:
 
         """
         # finds where the NMEA sentence starts or stops. if the message does 
-        # not have a "$" or "!" sign it's assumed to start at 0. if a message does not 
+        # not have a "$" or "!" sign it's discarded. if a message does not 
         # have a "*" sign, the checksum is missing and the index function 
         # raises an Exception.
         try:
             start = raw_sentence.find('$')+1
             if not start:
                 start =raw_sentence.find('!')+1
+                if not start:
+                    return
             stop = raw_sentence.index('*')+3
         except:
                 raise Exception("error: message has no checksum: ", raw_sentence)

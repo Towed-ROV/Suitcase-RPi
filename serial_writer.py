@@ -19,7 +19,7 @@ class Serial_Writer(Thread):
 
     def write_serial_data(self, message):
         if self.serial_port.isOpen():
-            output = "<" + message + ">"
+            output =  message 
 
             if output != "self.last_output":
 
