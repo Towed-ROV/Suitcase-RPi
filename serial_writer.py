@@ -36,7 +36,7 @@ class Serial_Writer(Thread):
             print('Serial port not open : ' + str(self.com_port))
 
 if __name__ == "__main__":
-    ser = SerialWriter('com8', 4800)
+    ser = Serial_Writer('com8', 4800)
     while True:
         ser.write_serial_data("test:1")
         time.sleep(1)

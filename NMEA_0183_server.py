@@ -35,7 +35,7 @@ class server():
         self.__sio = TextIOWrapper(BufferedRWPair(self.__ser,
                                                   self.__ser),
                                    encoding = 'ascii')
-        self.START_TIME = ""
+        self.SERVER_START = ""
         self.com_err = 0
         
         
@@ -70,7 +70,7 @@ class server():
         and parses data it receives.
         """
         self.set_start_time()
-        self.__save_to_file( "\n Server started: %s \n" % ( self.START_TIME), 
+        self.__save_to_file( "\n Server started: %s \n" % ( self.SERVER_START), 
                                                             self.FILE)
     
         while True:
@@ -146,7 +146,7 @@ class server():
         sets the start time of the server.
 
         """
-        self.START_TIME = "%s -:- %s" % (self.get_current_date_str(), 
+        self.SERVER_START = "%s -:- %s" % (self.get_current_date_str(), 
                                          self.get_current_time_str())
         
     def ready(self):
