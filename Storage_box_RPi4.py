@@ -8,9 +8,6 @@ Created on Sun Jan 31 13:49:29 2021
 from dataclasses import dataclass
 import json
 
-from NMEA_0183_parser import NMEA_parser
-from Project_parser import parser
-
 @dataclass
 class Storage_Box():
         def __init__(self,origin):
@@ -35,7 +32,6 @@ class Storage_Box():
                 return
                         
             for keys in data.keys():
-                        print(data)
                         self.__json_data[keys] = data[keys]
                 
             
