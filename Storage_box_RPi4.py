@@ -13,8 +13,9 @@ from Project_parser import parser
 
 @dataclass
 class Storage_Box():
-        def __init__(self):
+        def __init__(self,origin):
             self.__json_data = {}
+            self.origin =origin
         def update(self,data):
             """
             
@@ -29,11 +30,13 @@ class Storage_Box():
             None.
 
             """
+            
             if not data:
                 return
-            for keys in data:
-                self.__json_data[keys] = data[keys]
-                
+                        
+            for keys in data.keys():
+                        print(data)
+                        self.__json_data[keys] = data[keys]
                 
             
                         
@@ -58,6 +61,8 @@ class Storage_Box():
             """
             return self.__json_data[category]
         
+        def get_value(self,value_name,sensor):
+            return sensor[value_name]
         def get_sensor_old(self,category, t = None):
             """
             
@@ -75,8 +80,11 @@ class Storage_Box():
                 DESCRIPTION.
 
             """
-            d = self.get_sensor(category)
-            return "%s:%s"%(category,d)
+            sens = self.get_sensor(category)
+            d=[]
+            for keys in sens.keys():
+                d.append("<%s_%s:%s>"%(category,keys,sens[keys]))
+            return d
         
         def get_in_old_style(self):
             """
@@ -89,8 +97,10 @@ class Storage_Box():
 
             """
             ret_lst = []
+            ret_lst.append("ekkolodd")
             for k in self.keys():
-                ret_lst.append(self.get_sensor_old(k))
+                #n = self.get_old_name(k)
+                ret_lst.extend(self.get_sensor_old(k))
             return json.dumps(ret_lst)
                     
         def get(self):
@@ -104,11 +114,9 @@ class Storage_Box():
 
             """
             ret_dict = {}
-            ret_dict["payload_name"] = "sensor_data"
-            l = []
-            for k,v in self.__json_data.items():
-                l.append({"name": k,"value":v})
-            ret_dict["payload_data"]= l
+            ret_dict["payload_type"] = "sensor_data"
+            
+            ret_dict["payload_data"]= self.__build_dict()
             return ret_dict
         def get_str(self):
             """
@@ -126,32 +134,14 @@ class Storage_Box():
             return {"payload_type":"sensor_data","payload_data":self.__json_data}
         def keys(self):
             return self.__json_data.keys()
-    
-#____________________NMEA PARSER
-p = parser() 
-a = NMEA_parser()
-b = Storage_Box()
-
-msg1= a.parse_raw_message("Z/#m$SDDPT,,*57")
-rmsg2 = "$YXMTW,3.2,C,30,F,262.2,K*07"
-msg0= a.parse_raw_message("/n/\n None^d$YXMTW,25.6,C,40 F, 125.6,K*18")
-msg2 = a.parse_raw_message(rmsg2)
-print("\nnmea parser parsed/n %s \n as:\n %s\n"%(rmsg2,msg2))
-
-#StorageBOX
-b.update(msg0)
-print("\nfirst message added to Box: \n",b.get_str())
-
-b.update(msg2)
-b.update(msg1)
-print(b.get())
-print("\nafter one eddit and one adding with Null: \n",b.get_str())
-
-msg1= a.parse_raw_message("Z\n/#m$SDDPT,213,long,1232,lat*16")
-print("\nadding value to Null sentence:")
-b.update(msg1)
-print(b.get_str())
-
-print("\ngetting the old data style: \n",b.get_in_old_style())
-[print("\nget spesific old :\n ",b.get_sensor_old(m)) for m in b.keys()]
-
+        #def get_old_name(self,name):
+        def __build_dict(self):
+            d={}
+            d["origin"]:self.origin
+            for keys in self.keys():
+                sensor = self.get_sensor(keys)
+                for value_keys in sensor.keys():
+                    k = "%s_%s"%(keys,value_keys)
+                    d[k]=sensor[value_keys]
+            return d
+            
