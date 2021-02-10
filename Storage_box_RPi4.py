@@ -76,7 +76,7 @@ class Storage_Box():
 
             """
             d = self.get_sensor(category)
-            return "%s:%s"%(category,d)
+            return "<%s:%s>"%(category,d)
         
         def get_in_old_style(self):
             """
