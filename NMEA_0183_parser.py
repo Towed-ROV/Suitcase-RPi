@@ -67,11 +67,11 @@ class NMEA_parser:
                                  "DBT":["water_depth_feet","feet","water_depth_meters","meters","water_depth_fatoms","fatoms"],
                                  "GGA":["UTC time","1-sigma error in latitude","1-sigma error in longitude","1-sigma error in altitude","ID of most likely failed satellite","Probability of missed detection","Estimate of bias in meters","Standard deviation of bias estimate"],
                                  "GLL":["Latitude","N or S ","Longitude","E or W","UTC of this position","Status A - Data Valid, V - Data Invalid"],
-                                 "GSV":["Sentence_number","satellites_in_view","satellite_ID","elevation_degrees","azimuth_degrees_true","SNR_dB_(00-99)"],
+                                 "GSV":[ "total_number_of_messages","message_number","satellites_in_view","satellite_number","elevation_degrees","azimuth_degrees_true","SNR_dB_(00-99)","satellite_number","elevation_degrees","azimuth_degrees_true","SNR_dB_(00-99)","satellite_number","elevation_degrees","azimuth_degrees_true","SNR_dB_(00-99)","satellite_number","elevation_degrees","azimuth_degrees_true","SNR_dB_(00-99)","satellite_number","elevation_degrees","azimuth_degrees_true","SNR_dB_(00-99)"],
                                  "HDM":["Heading Degrees_magnetic","M=magnetic"],
                                  "HDT":["Heading_degrees_True","T=true"],
                                  "MWV":["Wind_Angle","R=Relative,T=True","Wind_Speed","Speed_Units","A=Valid_V=Invalid"],
-                                 "RMC":["time","status_V=warning","latitude","north_south","longitude","east_west","speed_knots","track_made_good,_deg_true","date_ddmmyy","magnetic_variation_deg","east_west"],
+                                 "RMC":["time","status_V=warning","latitude","north_south","longitude","east_west","speed_knots","track_made_good_true_deg","date_ddmmyy","magnetic_variation_deg","east_west"],
                                  "HDG":["magnetic_sensor_heading_deg","Magnetic_deviation_deg","magnetic_deviation_direction","magnetic_variation_degreees","magnetic_variation_direction"],
                                  "RSA":["StarBoard_or_single_rudder_sensor(\"-\"=turn_to_port)","Status_A=valid_V=invalid","port_rudder_sensor","Status_A=valid_V=invalid"],
                                  "VHW":["degrees_true","T=true","degrees_mag","M=magnetic","speed_knots","N=knots","speed_kmph","K=Km_per_hour"],
@@ -139,7 +139,7 @@ class NMEA_parser:
             print('parser error count: ', self.__parser_error_count)
             raise Exception(format(e))
             
-    def parse_raw_message(self,raw_sentence):
+  def parse_raw_message(self,raw_sentence):
         """
         NMEA sentences from serial communication often start with some 
         unnecessary or invalid data. this message strips that data, before it 
@@ -177,36 +177,6 @@ class NMEA_parser:
         # parses and returns the sentence
         return self.parse_nmea_sentence(sentence)
     
-      Parameters
-      ----------
-      sentence : string
-      This message should contain an NMEA message, but it does not need 
-      to start or end with it.
-      Returns
-      -------
-      string
-       A parsed sentence with the talker id, sentence type and 
-      data.
-    
-      """
-      # finds where the NMEA sentence starts or stops. if the message does 
-      # not have a "$" or "!" sign it's assumed to start at 0. if a message does not 
-      # have a "*" sign, the checksum is missing and the index function 
-      # raises an Exception.
-      try:
-          start = raw_sentence.find('$')+1
-          if not start:
-              start =raw_sentence.find('!')+1
-              stop = raw_sentence.index('*')+3
-      except:
-          raise Exception("error: message has no checksum: ", raw_sentence)
-          
-      # strips the message down to the NMEA sentence
-      sentence = raw_sentence[start:stop]
-      
-      # parses and returns the sentence
-      return self.parse_nmea_sentence(sentence)
-
   def __clean_data(self, data):
         return [None if not v else float(v) if all((c in set('1234567890.')) for c in v) else v for v in data] 
     
