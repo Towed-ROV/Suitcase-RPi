@@ -39,14 +39,16 @@ def test():
     b.update(msg4)
     b.update(msg2)
     b.update(msg1)
+    print("get test")
+    print(b.get())
     print("\ngetting the old data style: \n",b.get_in_old_style())
     [print("\nget spesific old :\n ",b.get_sensor_old(m)) for m in b.keys()]
-    print("adding group")
-    for i in range(len(test_lst)):
-        test_lst[i] = a.parse_raw_message(test_lst[i])
-    for dicts in test_lst:
-        b.update(dicts)
-    print(b.get())
-    print(b.get_str())
-    print(b.get_in_old_style())
+    # print("adding group")
+    # for i in range(len(test_lst)):
+    #     test_lst[i] = a.parse_raw_message(test_lst[i])
+    # for dicts in test_lst:
+    #     b.update(dicts)
+    # print(b.get())
+    # print(b.get_str())
+    # print(b.get_in_old_style())
 test()
