@@ -74,8 +74,6 @@ __ser
                                                             self.FILE)
         while True:
             sentence = self.get_message()
-            if len(sente__sernce) > 1 :
-                self.__save_to_file(sentence, self.FILE)
     def get_message(self):
         """
         gets a message from the serial port, parses it and returns the parsed

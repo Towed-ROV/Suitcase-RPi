@@ -27,6 +27,7 @@ def test():
                 "$GPRMC,092751.000,A,5321.6802,N,00630.3371,W,0.06,31.66,280511,,,A*45"]
     
     msg1= a.parse_nmea_sentence("$YXMTW,25.6,C*13")
+    print(msg1)
     rmsg2 = "$SDDPT,10,*56"
     msg0= a.parse_raw_message("$SDDBT,10,f,10,M,10,F*29")
     msg4= a.parse_raw_message("$GPAAM,A,A,0.10,N,WPTNME*32")
@@ -35,12 +36,12 @@ def test():
     
     #StorageBOX
     b.update(msg0)
-    print("\nfirst message added to Box: \n",b.get_str())
+    print("\nfirst message added to Box: \n",b.get_full_str())
     b.update(msg4)
     b.update(msg2)
     b.update(msg1)
     print("get test")
-    print(b.get())
+    print(b.get_all())
     print("\ngetting the old data style: \n",b.get_in_old_style())
     [print("\nget spesific old :\n ",b.get_sensor_old(m)) for m in b.keys()]
     print("adding group")
@@ -48,7 +49,8 @@ def test():
         test_lst[i] = a.parse_raw_message(test_lst[i])
     for dicts in test_lst:
         b.update(dicts)
-    print(b.get())
-    print(b.get_str())
+    print(b.get_all())
+    print(b.get_full_str())
     print(b.get_in_old_style())
+    print("\n\n\n", b.get_reduced_string())
 test()

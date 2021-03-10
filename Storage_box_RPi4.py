@@ -13,6 +13,7 @@ class Storage_Box():
         def __init__(self,origin):
             self.__json_data = {}
             self.origin =origin
+            self.send_tags=["time","depth","Temprature", "latitude","north_south", "longitude","north_south","speed","heading","bias"]
         def update(self,data):
             """
             
@@ -101,7 +102,7 @@ class Storage_Box():
                 ret_lst.extend(self.get_sensor_old(k))
             return json.dumps(ret_lst)
                     
-        def get(self):
+        def get_all(self):
             """
             
 
@@ -116,7 +117,7 @@ class Storage_Box():
             
             ret_dict["payload_data"]= self.__build_dict()
             return ret_dict
-        def get_str(self):
+        def get_full_str(self):
             """
             
 
@@ -126,7 +127,13 @@ class Storage_Box():
                 DESCRIPTION.
 
             """
-            return json.dumps(self.get())
+            return json.dumps(self.get_all())
+        def get_reduced_string(self):
+            ret_dict ={}
+            ret_dict["payload_type"] = "sensor_data"
+            print("capt")
+            ret_dict["payload_data"]= self.__build_sub_dict(self.send_tags)
+            return json.dumps(ret_dict)
         def __get_sentence(self):
             [[{"name":k,"value":v} for k,v in self.__json_data.iteritems]]
             return {"payload_type":"sensor_data","payload_data":self.__json_data}
@@ -142,4 +149,17 @@ class Storage_Box():
                     k = "%s_%s"%(keys,value_keys)
                     d[k]=sensor[value_keys]
             return d
+        def __build_sub_dict(self,tags):
+            d={}
+            d["origin"]:self.origin
+
+            for keys in self.keys():
+                sensor = self.get_sensor(keys)
+                for value_keys in sensor.keys():
+                    print(value_keys)
+                    if(any(tag.lower() in value_keys.lower() for tag in tags)):
+                        k = "%s_%s"%(keys,value_keys)
+                        d[k]=sensor[value_keys]
+            return d
+            
             
