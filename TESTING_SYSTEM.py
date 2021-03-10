@@ -8,7 +8,8 @@ Created on Wed Feb  3 11:22:13 2021
 from NMEA_0183_parser import NMEA_parser
 from Storage_box_RPi4 import Storage_Box
 from Project_parser import parser
-
+def space():
+    print("\n\n\n\n\n")
 def test():
     #____________________NMEA PARSER
     a = NMEA_parser()
@@ -28,29 +29,38 @@ def test():
     
     msg1= a.parse_nmea_sentence("$YXMTW,25.6,C*13")
     print(msg1)
+    
     rmsg2 = "$SDDPT,10,*56"
     msg0= a.parse_raw_message("$SDDBT,10,f,10,M,10,F*29")
     msg4= a.parse_raw_message("$GPAAM,A,A,0.10,N,WPTNME*32")
     msg2 = a.parse_raw_message(rmsg2)
-    print("\nnmea parser parsed/n %s \n as:\n %s\n"%(rmsg2,msg2))
+    print("nmea parser parsed/n %s \n as:\n %s\n"%(rmsg2,msg2))
     
     #StorageBOX
     b.update(msg0)
-    print("\nfirst message added to Box: \n",b.get_full_str())
+    print("first message added to Box: \n",b.get_full_str())
+    
     b.update(msg4)
     b.update(msg2)
     b.update(msg1)
     print("get test")
+    space()
     print(b.get_all())
     print("\ngetting the old data style: \n",b.get_in_old_style())
+    space()
     [print("\nget spesific old :\n ",b.get_sensor_old(m)) for m in b.keys()]
+    space()
     print("adding group")
     for i in range(len(test_lst)):
         test_lst[i] = a.parse_raw_message(test_lst[i])
     for dicts in test_lst:
         b.update(dicts)
+        
     print(b.get_all())
+    space()
     print(b.get_full_str())
+    space()
     print(b.get_in_old_style())
-    print("\n\n\n", b.get_reduced_string())
+    space()
+    print(b.get_reduced_string())
 test()

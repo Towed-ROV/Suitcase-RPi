@@ -131,7 +131,7 @@ class Storage_Box():
         def get_reduced_string(self):
             ret_dict ={}
             ret_dict["payload_type"] = "sensor_data"
-            print("capt")
+          
             ret_dict["payload_data"]= self.__build_sub_dict(self.send_tags)
             return json.dumps(ret_dict)
         def __get_sentence(self):
@@ -156,7 +156,7 @@ class Storage_Box():
             for keys in self.keys():
                 sensor = self.get_sensor(keys)
                 for value_keys in sensor.keys():
-                    print(value_keys)
+          
                     if(any(tag.lower() in value_keys.lower() for tag in tags)):
                         k = "%s_%s"%(keys,value_keys)
                         d[k]=sensor[value_keys]
