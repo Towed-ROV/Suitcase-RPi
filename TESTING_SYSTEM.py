@@ -10,10 +10,11 @@ from Storage_box_RPi4 import Storage_Box
 from Project_parser import parser
 def space():
     print("\n\n\n\n\n")
-def test():
+def test(b=None):
     #____________________NMEA PARSER
     a = NMEA_parser()
-    b = Storage_Box("suitcase")
+    if not b:
+        b = Storage_Box("suitcase")
     test_lst=[  "$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76",
                 "$GPGSA,A,3,10,07,05,02,29,04,08,13,,,,,1.72,1.03,1.38*0A",
                 "$GPGSV,3,1,11,10,63,137,17,07,61,098,15,05,59,290,20,08,54,157,30*70",
@@ -45,7 +46,6 @@ def test():
     b.update(msg1)
     print("get test")
     space()
-    print(b.get_all())
     print("\ngetting the old data style: \n",b.get_in_old_style())
     space()
     [print("\nget spesific old :\n ",b.get_sensor_old(m)) for m in b.keys()]
@@ -56,7 +56,6 @@ def test():
     for dicts in test_lst:
         b.update(dicts)
         
-    print(b.get_all())
     space()
     print(b.get_full_str())
     space()

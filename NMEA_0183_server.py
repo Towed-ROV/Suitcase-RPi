@@ -9,12 +9,13 @@ from NMEA_0183_parser import NMEA_parser
 from io import TextIOWrapper, BufferedRWPair
 import time
 import serial
+from threading import Thread
 
-class server():
+class server(Thread):
     """
     This class receives and parses NMEA 0183 messages from a serial port. 
     """
-    def __init__(self,port,baudrate):
+    def __init__(self,port,baudrate,storage_box,frequency):
         """
         initalizer, defines the serial port and parser and other variables and
         constants.
@@ -25,20 +26,29 @@ class server():
             the port that the server should connect to and read.
 
         """
-        self.FILE = "D:\ROV_BATCHELOR\Code\Arduino\echo_sounder\EchoData_parsed.txt"
+        Thread.__init__(self)
+        
         self.__parser = NMEA_parser()
         self.__ser = serial.Serial(port,
-                                   baudrate, 
-                                   timeout=1, 
-                                   stopbits=1, 
+                                   baudrate,
+                                   timeout=1,
+                                   stopbits=1,
                                    bytesize=8)
 #         self.__sio = TextIOWrapper(BufferedRWPair(self.__ser,
 #                                                   self.__ser),
 #                                    encoding = 'ascii')
         self.SERVER_START = ""
         self.com_err = 0
+        self.box = storage_box
+        self.frequency =frequency
         
-        
+    def run(self):
+        while True:
+            start = time.process_time()
+            message= self.get_message()
+            self.box.update(message)
+            end= time.process_time()
+            time.sleep(1/self.frequency-(end-start))
         
     def __get_current_time_str(self):
         """
@@ -70,8 +80,7 @@ __ser
         and parses data it receives.
         """
         self.set_start_time()
-        self.__save_to_file( "\n Server started: %s \n" % ( self.SERVER_START), 
-                                                            self.FILE)
+        
         while True:
             sentence = self.get_message()
     def get_message(self):
@@ -110,8 +119,6 @@ __ser
         except serial.SerialException as e:
             print('communication error: ', format(e))
             time.sleep(0.5)
-            time.sleep(0.5)
-            time.sleep(0.5)
             self.com_err += 1 
             
             if self.com_err < 5:
@@ -124,23 +131,7 @@ __ser
             if self.com_err < 5:
                 return self.get_message()
             raise e
-    def __save_to_file(self,sentence,file):
-        """
-        saves a sentence to a speicifed file
-
-        Parameters
-        ----------
-        sentence : 
-            string
-            sentence to save.
-        file : 
-            string
-            the file loctation.
-
-
-        """
-        with open(file,'a')  as f:
-                f.write(sentence)
+   
                 
     def __set_start_time(self):
         """

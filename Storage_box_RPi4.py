@@ -7,14 +7,18 @@ Created on Sun Jan 31 13:49:29 2021
 
 from dataclasses import dataclass
 import json
+import threading
+import types
 
 @dataclass
-class Storage_Box():
+class Storage_Box:
         def __init__(self,origin):
             self.__json_data = {}
             self.origin =origin
             self.send_tags=["time","depth","Temprature", "latitude","north_south", "longitude","north_south","speed","heading","bias"]
+            self.lock = threading.RLock()
         def update(self,data):
+            
             """
             
 
@@ -28,12 +32,12 @@ class Storage_Box():
             None.
 
             """
-            
-            if not data:
-                return
-                        
-            for keys in data.keys():
-                        self.__json_data[keys] = data[keys]
+            with self.lock:
+                if not data:
+                    return
+                            
+                for keys in data.keys():
+                            self.__json_data[keys] = data[keys]
                 
             
                         
@@ -56,9 +60,10 @@ class Storage_Box():
                 DESCRIPTION.
 
             """
-            return self.__json_data[category]
+            with self.lock:
+                return self.__json_data[category]
         
-        def get_value(self,value_name,sensor):
+        def __get_value(self,value_name,sensor):
             return sensor[value_name]
         
         def get_sensor_old(self,category, t = None):
@@ -78,11 +83,12 @@ class Storage_Box():
                 DESCRIPTION.
 
             """
-            sens = self.get_sensor(category)
-            d=[]
-            for keys in sens.keys():
-                d.append("<%s_%s:%s>"%(category,keys,sens[keys]))
-            return d
+            with self.lock:
+                sens = self.get_sensor(category)
+                d=[]
+                for keys in sens.keys():
+                    d.append("<%s_%s:%s>"%(category,keys,sens[keys]))
+                return d
 
         
         def get_in_old_style(self):
@@ -95,17 +101,16 @@ class Storage_Box():
                 DESCRIPTION.
 
             """
-            ret_lst = []
-            ret_lst.append("ekkolodd")
-            for k in self.keys():
-                #n = self.get_old_name(k)
-                ret_lst.extend(self.get_sensor_old(k))
-            return json.dumps(ret_lst)
-                    
-        def get_all(self):
+            with self.lock:
+                ret_lst = []
+                ret_lst.append("ekkolodd")
+                for k in self.keys():
+                    #n = self.get_old_name(k)
+                    ret_lst.extend(self.get_sensor_old(k))
+                return json.dumps(ret_lst)
+                        
+        def __get_all(self):
             """
-            
-
             Returns
             -------
             TYPE
@@ -127,13 +132,15 @@ class Storage_Box():
                 DESCRIPTION.
 
             """
-            return json.dumps(self.get_all())
+            with self.lock:
+                return json.dumps(self.__get_all())
         def get_reduced_string(self):
-            ret_dict ={}
-            ret_dict["payload_type"] = "sensor_data"
-          
-            ret_dict["payload_data"]= self.__build_sub_dict(self.send_tags)
-            return json.dumps(ret_dict)
+            with self.lock:
+                ret_dict ={}
+                ret_dict["payload_type"] = "sensor_data"
+              
+                ret_dict["payload_data"]= self.__build_sub_dict(self.send_tags)
+                return json.dumps(ret_dict)
         def __get_sentence(self):
             [[{"name":k,"value":v} for k,v in self.__json_data.iteritems]]
             return {"payload_type":"sensor_data","payload_data":self.__json_data}
@@ -161,5 +168,5 @@ class Storage_Box():
                         k = "%s_%s"%(keys,value_keys)
                         d[k]=sensor[value_keys]
             return d
-            
-            
+    
+        
