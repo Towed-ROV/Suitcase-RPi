@@ -39,7 +39,7 @@ def test(b=None):
     
     #StorageBOX
     b.update(msg0)
-    print("first message added to Box: \n",b.get_full_str())
+    print("first message added to Box: \n",b.get_full_string())
     
     b.update(msg4)
     b.update(msg2)
@@ -57,7 +57,7 @@ def test(b=None):
         b.update(dicts)
         
     space()
-    print(b.get_full_str())
+    print(b.get_full_string())
     space()
     print(b.get_in_old_style())
     space()

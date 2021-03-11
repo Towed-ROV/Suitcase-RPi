@@ -122,7 +122,7 @@ class Storage_Box:
             
             ret_dict["payload_data"]= self.__build_dict()
             return ret_dict
-        def get_full_str(self):
+        def get_full_string(self):
             """
             
 
