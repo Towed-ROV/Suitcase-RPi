@@ -5,33 +5,36 @@ Created on Sun Jan 31 13:49:29 2021
 
 @author: fredborg
 """
-
-from dataclasses import dataclass
+    
 import json
 import threading
+import types
 
-
-@dataclass
-class Storage_Box:
+class Storage_Box(dict):
     """
-    Storessensor data, can give outstrings for sending at will.
+    Stores sensor data, can give outstrings for sending at will.
 
     Can recive sensor data form different threads and save them, cann then send
     the data to a new thread as raw data or a string parsed as the project
     parsing.
 
+    the class is has added tags and thread safety to a normal dictonay class.
+
     """
 
     def __init__(self, origin):
-        self.__json_data = {}
+        dict.__init__(self)
+        self.__json_data = dict(self)
         self.origin = origin
-        self.send_tags = ["time", "depth", "Temprature", "latitude",
+        self.send_tags = ["time", "depth_in_M", "temprature", "latitude",
                           "north_south", "longitude", "north_south", "speed",
                           "heading", "bias"]
         self.lock = threading.RLock()
 
     def update(self, data):
         """
+        Update the dictonary with new values while beeing threadsafe.
+
         Parameters.
 
         ----------
@@ -44,10 +47,14 @@ class Storage_Box:
 
         """
         with self.lock:
-            if not data:
+            if type(data) is not dict:
+                if not isinstance(data, type(None)):
+                    raise ValueError("%s  %s" %
+                                     ("data is not dict but",
+                                      type(data)))
                 return
-            for keys in data.keys():
-                self.__json_data[keys] = data[keys]
+            for keys, values in data.items():
+                self.__json_data[keys] = values
 
     def get_sensor(self, category):
         """
@@ -89,10 +96,13 @@ class Storage_Box:
         """
         with self.lock:
             sens = self.get_sensor(category)
-            d = []
-            for keys in sens.keys():
-                d.append("<%s_%s:%s>" % (category, keys, sens[keys]))
-            return d
+            return_list = []
+            if isinstance(sens, dict):
+                for key, value in sens.items():
+                    return_list.append("<%s_%s:%s>" % (category, key, value))
+            else:
+                return_list.append("<%s:%s>" % (category, sens))
+            return return_list
 
     def get_in_old_style(self):
         """
@@ -152,7 +162,6 @@ class Storage_Box:
         with self.lock:
             ret_dict = {}
             ret_dict["payload_type"] = "sensor_data"
-
             ret_dict["payload_data"] = self.__build_sub_dict(self.send_tags)
             return json.dumps(ret_dict)
 
@@ -176,24 +185,54 @@ class Storage_Box:
         return self.__json_data.keys()
 
     def __build_dict(self):
-        d = {}
-        d["origin"]: self.origin
+        payload_list = []
         for keys in self.keys():
             sensor = self.get_sensor(keys)
-            for value_keys in sensor.keys():
-                k = "%s_%s" % (keys, value_keys)
-                d[k] = sensor[value_keys]
-        return d
+            payload_list.append(self.__add_sensor(keys, sensor))
+        return payload_list
 
     def __build_sub_dict(self, tags):
-        d = {}
-        d["origin"]: self.origin
-
+        payload_list = []
         for keys in self.keys():
             sensor = self.get_sensor(keys)
-            for value_keys in sensor.keys():
+            if isinstance(sensor, dict):
+                if any(tag in keys.lower() for tag in tags) or any(tag in sensor.keys() for tag in tags):
+                    iter_sensor = sensor.copy()
+                    for sub_keys in iter_sensor.keys():
+                        if not any(sub_keys in tag or tag in sub_keys
+                                   for tag in tags):
+                            del sensor[sub_keys]
+                    payload_list.append(self.__add_sensor(keys, sensor))
+            else:
+                if any(tag in sensor or sensor in tag for tag in tags):
+                    payload_list.append(self.__add_sensor(keys, sensor))
+        return payload_list
 
-                if(any(tag.lower() in value_keys.lower() for tag in tags)):
-                    k = "%s_%s" % (keys, value_keys)
-                    d[k] = sensor[value_keys]
-        return d
+    def __add_sensor(self, name, sensor):
+        print(name,sensor)
+        sensor_dict = {}
+        sensor_dict["name"] = name
+        sensor_dict["value"] = None
+        if isinstance(sensor, dict):
+            if len(sensor) > 1:
+                value_dict = {}
+                for key, value in sensor.items():
+                    value_dict[key] = value
+                sensor_dict["value"] = value_dict
+            else:
+                for key,value in sensor.items():
+                    sensor_dict["value"] = value
+        else:
+            sensor_dict["value"] = sensor
+        return sensor_dict
+
+    def clear(self):
+        """
+        Clear the data from the storage box.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.__json_data.clear()

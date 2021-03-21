@@ -8,11 +8,12 @@ Created on Wed Mar 10 21:43:01 2021
 from payload_sender import ethernet_sender
 from Storage_box_RPi4 import Storage_Box
 from NMEA_0183_server import server as nmea_server
-from TESTING_SYSTEM import test
-
 
 box = Storage_Box("siutcase")
-test(box)
+
+# from TESTING_SYSTEM import test
+# test(box)
+
 sender = ethernet_sender('tcp://192.168.0.110:8765', box, 10)
 echo_server = nmea_server("/dev/ttyAMA0", 4800, box, 10)
 GPS_server = nmea_server("/dev/ttyAMA2", 9600, box, 20)
