@@ -16,7 +16,7 @@ from dataclasses import dataclass
 import json
 
 @dataclass
-class Storage_Box():
+class Storage_Box:
         def __init__(self):
             self.__json_data = []
             self.keys = []
