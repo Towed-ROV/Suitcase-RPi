@@ -1,8 +1,9 @@
 
 from threading import Thread
 from Storage_box_RPi4 import Storage_Box
-from sophusUtil import PI,pytagoras_round, deg_to_rad,earth_radius_at_lat,calc_big_circle_dist
+from sophusUtil import PI, pytagoras_round, deg_to_rad, earth_radius_at_lat, calc_big_circle_dist
 from math import sin, cos, asin,sqrt
+
 class Distance_Calculator:
     def __init__(self,box:Storage_Box,start_lat,to_travel):
         self.box = box
@@ -19,11 +20,11 @@ class Distance_Calculator:
         lat2 = deg_to_rad(lat2)       
         lon1 = deg_to_rad(lon1)
         lon2 = deg_to_rad(lon2)
-        dist = calc_big_circle_dist(lat1,lat2,lon1,lon2,self.earth_radius)
+        dist = calc_big_circle_dist(lat1, lat2, lon1, lon2, self.earth_radius)
         return  dist
 
     def moved_since_last(self, n_lat,n_lon):
-        return self.calculate_dist(n_lat,self.last_lat, n_lon, self.last_lon)
+        return self.calculate_dist(n_lat, self.last_lat, n_lon, self.last_lon)
 
     def check_dist(self):
         lat = box.get_sensor("latitude")
