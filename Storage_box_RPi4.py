@@ -5,10 +5,8 @@ Created on Sun Jan 31 13:49:29 2021
 
 @author: fredborg
 """
-    
-import json
+
 import threading
-import types
 
 class Storage_Box:
     """
@@ -23,7 +21,7 @@ class Storage_Box:
     """
 
     def __init__(self, origin):
-        self.__json_data = dict(self)
+        self.__json_data = {}
         self.origin = origin
         self.send_tags = ["depth_in_M", "latitude", "speed",
                           "north_south", "longitude", "north_south",
@@ -49,12 +47,11 @@ class Storage_Box:
         with self.lock:
             if type(data) is not dict:
                 if not isinstance(data, type(None)):
-                    raise ValueError("%s  %s" %
-                                     ("data is not dict but",
-                                      type(data)))
-                return
+                    print("%s  %s" %("data is not dict but",type(data)))
+                return False
             for keys, values in data.items():
                 self.__json_data[keys] = values
+            return True
 
     def get_sensor(self, category):
         """

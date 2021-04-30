@@ -1,7 +1,7 @@
 
 from threading import Thread
 from Storage_box_RPi4 import Storage_Box
-from sophusUtil import PI, pytagoras_round, deg_to_rad, earth_radius_at_lat, calc_big_circle_dist
+from sophusUtil import deg_to_rad, earth_radius_at_lat, calc_big_circle_dist
 import time
 
 class Distance_Calculator(Thread):

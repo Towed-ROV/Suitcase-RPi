@@ -7,7 +7,6 @@ Created on Wed Feb  3 11:22:13 2021
 
 from NMEA_0183_parser import NMEA_parser
 from Storage_box_RPi4 import Storage_Box
-from Project_parser import parser
 from Distance_Calculator import Distance_Calculator
 import time
 def space():

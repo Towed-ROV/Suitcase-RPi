@@ -43,8 +43,9 @@ class server(Thread):
         self.box = storage_box
         self.frequency = frequency
         self.endchar = b"\n"
-        self.startchar=b"$"
-        
+        self.startchar = b"$"
+        self.buffer = b""
+
     def run(self):
         """
         Run the Thread, reciving nmea data and parsing it.
@@ -54,17 +55,17 @@ class server(Thread):
         None.
 
         """
+
+        last = time.monotonic()
         while True:
             try:
-                start = time.process_time()
-                message = self.get_message()
-                #print(message)
-                self.box.update(message)
-                end = time.process_time()
-                time.sleep(1/self.frequency-(end-start)+3)
+                current = time.monotonic()
+                if current - last > 1 / self.frequency:
+                    message = self.get_message()
+                    self.box.update(message)
+                    last = current
             except ValueError as e:
                 print(format(e))
-                
 
     def __get_current_time_str(self):
         """
@@ -76,7 +77,7 @@ class server(Thread):
             returns a string with the current time in the format ss:mm:tt.
         """
         timer = time.localtime()
-        return "%i:%i:%i" % (timer.tm_sec,  timer.tm_min, timer.tm_hour)
+        return "%i:%i:%i" % (timer.tm_sec, timer.tm_min, timer.tm_hour)
 
     def __get_current_date_str(self):
         """
@@ -109,42 +110,36 @@ class server(Thread):
         """
         try:
             if self.ready():
-                buffer = b""
-                endchar = b"\n"
-                startchar=b"$"
-                reading = True
-                while(reading):
-                    data = self.__ser.read(1)
-                    if str(data) == self.startchar:
-                        buffer = data
-                    buffer += data
-                    if data in self.endchar:
-                        string = str(buffer)
-                        reading= False
-                try:
-                    print(string)
-                    parsed_data = self.__parser.parse_raw_message(string)
-                except Exception as e:
-                    print(format(e))
-                    return
-
+                msg = self.buffer_read()
+                parsed_data = self.__parser.parse_raw_message(msg)
                 return parsed_data
-        except serial.SerialException as e:
-            print('communication error: ', format(e))
-            time.sleep(0.5)
-            self.com_err += 1
 
-            if self.com_err < 5:
-                return self.get_message()
-            else:
-                raise e
+        except serial.SerialException as e:
+            self.retry('communication error: ', e)
         except UnicodeDecodeError as e:
-            print('decode error: ', format(e))
-            time.sleep(0.5)
-            self.com_err += 1
-            if self.com_err < 5:
-                return self.get_message()
-            raise e
+            self.retry('decode error: ', e)
+
+    def retry(self, error_type, error):
+        print(error_type, format(error))
+        time.sleep(0.1)
+        self.com_err += 1
+        if self.com_err < 5:
+            return self.get_message()
+        self.com_err = 0
+        raise error
+
+    def buffer_read(self):
+        buffer = b""
+        reading = True
+        while (reading):
+            data = self.__ser.read(1)
+            if str(data) == self.startchar:
+                buffer = data
+            buffer += data
+            if data in self.endchar:
+                string = str(buffer)
+                reading = False
+                return string
 
     def __set_start_time(self):
         """
@@ -155,10 +150,12 @@ class server(Thread):
         None.
 
         """
-        self.SERVER_START = "%s -:- %s" % (self.get_current_date_str(),
-                                           self.get_current_time_str())
+        self.SERVER_START = "%s -:- %s" % (str(self.get_current_date_str()),
+                                           str(self.get_current_time_str()))
+
     def is_connected(self):
-        return self.serial.open()  
+        return self.serial.open()
+
     def ready(self):
         """
         Check if there are bytes waiting.
@@ -170,9 +167,9 @@ class server(Thread):
             otherwise.
         """
         return self.__ser.inWaiting() > 0
-    
-    def send(self, msg:bytes):
+
+    def send(self, msg: bytes):
         checksum = NMEASentence.checksum(msg)
         msg += checksum
-        #print("sending: ", str(msg))
+        # print("sending: ", str(msg))
         self.__ser.write(msg)
