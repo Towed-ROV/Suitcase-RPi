@@ -24,16 +24,15 @@ class NMEA_parser:
         self.__data_types = {"MTW": "Mean_Temprature_Water",
                                     "DPT": "Depth_of_water",
                                     "DBT": "Depth_below_Transducer",
-                                    "GGA": "Global_Positions_System_fix_data",
-                                    "GLL": "Geographic_possition_Langitude/Logitude",
+                                    "GGA": "GPS_fix_data",
+                                    "GLL": "GPS_Langitude/Logitude",
                                     "GSV": "Satelites_in_view",
                                     "HDM": "Heading,_magnetic",
                                     "HDT": "Heading,_True",
                                     "LTW": "Distance_traveld_throug_water",
                                     "MWD": "Wind_direction_and_speed",
                                     "MWV": "Wind_speed_and_angle",
-                                    "RMC":
-                                    "Recomended_Minimum_Navigation_Information",
+                                    "RMC": "GPS_Recomended_Minimum_Navigation_Information",
                                     "HDG": "Heding_Deviation_and_Variation",
                                     "RSA": "Rudder_sensor_angle",
                                     "VHW": "Water_Speed_and_heading",
@@ -54,19 +53,9 @@ class NMEA_parser:
                                     "ROS": "GPSGate_Buddy_Position_Update",
                                     "DSC": "Digital_Selective_Calling_Information",
                                     "BOD": "Bearing_Origin_to_Destination",
-                                    "RMB": "Recommended_Minimum_Navigation_Information",
-                                    "WPL": "Waypoint_Location",
+                                    "RMB": "GPS_Recommended_Minimum_Navigation_Information",
+                                    "WPL": "GPS_Waypoint_Location",
                                     "RTE": "Routes",
-                                    "APB": "Autopilot_Sentence_B",
-                                    "XTE": "Measured_cross_track_error",
-                                    "VDM": "Automatic_Information_System_(AIS)",
-                                    "VDO": "Automatic_Information_System_(AIS)",
-                                    "TTM": "Tracked_Target_Message",
-                                    "TLL": "Target_Latitude_and_Longitude",
-                                    "OSD": "Own_Ship_Data",
-                                    "ROS": "GPSGate_Buddy_Position_Update",
-                                    "DSC": "Digital_Selective_Calling_Information",
-                                    "BOD": "Bearing_Origin_to_Destination",
                                     "DSE": "Extended_Digital_Selective_Calling_Information_including_a_more_accurate_position"}
 
         self.__sensor_values = {"MTW": ["temprature",
@@ -84,13 +73,19 @@ class NMEA_parser:
                                         "depth",
                                         "Unit"],
                                 "GGA": ["UTC time",
-                                        "1-sigma error, latitude",
-                                        "1-sigma error, longitude",
-                                        "1-sigma error, altitude",
-                                        "ID of most likely failed satellite",
-                                        "Probability of missed detection",
-                                        "Estimate of bias, meters",
-                                        "Standard deviation of bias estimate"],
+                                        "latitude",
+                                        "north_or_south",
+                                        "longitude",
+                                        "east_or_west",
+                                        "quality_indicator",
+                                        "satilites_in_use",
+                                        "horsiontal_DOP",
+                                        "Antena_height",
+                                        "Unit",
+                                        "Geoidal separations",
+                                        "Unit",
+                                        "Age_of_differential_data_record",
+                                        "Base_station_id"],
                                 "GLL": ["Latitude",
                                         "N or S ",
                                         "Longitude",
@@ -157,12 +152,12 @@ class NMEA_parser:
                                         "Unit",
                                         "speed",
                                         "Unit"],
-                                "VTG": ["track_degrees_true",
-                                        "T=true",
+                                "VTG": ["track_made_good",
+                                        "Unit",
                                         "Track_degrees",
                                         "Unit",
                                         "speed",
-                                        "unti",
+                                        "Unit",
                                         "speed",
                                         "Unit"],
                                 "VWR": ["wind_direction_degrees",
@@ -360,6 +355,7 @@ class NMEA_parser:
             data.
 
         """
+        #print(sentence)
         try:
             parsed_sentence = pynmea2.parse(sentence)
 
@@ -367,7 +363,7 @@ class NMEA_parser:
             data = self.__order_data(self.__clean_data(parsed_sentence.data),
                                      msg_type)
             data_id = self.__get_data_type(msg_type)
-            parsed_json = {data_id: data}
+            parsed_json = {data_id.lower(): data}
             return parsed_json
 
         except pynmea2.ParseError as e:
@@ -413,7 +409,7 @@ class NMEA_parser:
 
         # strips the message down to the NMEA sentence
         sentence = raw_sentence[start:stop]
-
+        #print(sentence)
         # parses and returns the sentence
         return self.parse_nmea_sentence(sentence)
 
@@ -432,20 +428,20 @@ class NMEA_parser:
 
         ordered_data = {}
         indexis = np.array([])
-        if "Unit" in self.__sensor_values[data_id]:
+        if "Unit" or "unit" in self.__sensor_values[data_id]:
             indexis = np.array([i for i, s in enumerate(self.__sensor_values[data_id])
-                                if s.lower() == "Unit".lower() or s == "Unit"])
+                                if s.lower() == "Unit".lower()])
             indexis = indexis[0:len(data)-1]
             for i in indexis[::-1]:
-                print(i)
+                
                 s = "%s_in_%s" % (
                    self.__sensor_values[data_id][i-1], data.pop(i))
                 ordered_data[s] = data[i-1]
                 data.pop(i-1)
-                print(s)
+                
  
         for i, v in enumerate(data):
-            print(v,i)
+            
             if v:
                 if data_id in self.__sensor_values.keys() and i < len(
                         self.__sensor_values[data_id]):

@@ -7,13 +7,13 @@ Created on Wed Mar 10 22:42:29 2021.
 from threading import Thread
 import zmq
 import time
-
+import json
 
 class ethernet_sender(Thread):
     """
     Ethernet transmitter.
 
-    Sends data to the API from the siutcase.
+    Sends data to the API from the suitcase.
     """
 
     def __init__(self, ip, storage_box, frequncy):
@@ -57,14 +57,23 @@ class ethernet_sender(Thread):
 
         """
         while True:
-            start = time.process_time()
-
-            message = self.box.get_reduced_string()
-            self.publish(message)
-            end = time.process_time()
-            time.sleep(1/self.frequency - (end-start))
-
-    def publish(self, message):
+            try:
+                start = time.process_time()
+                message = self.get_message(reduce=True)
+                if message and len(message) >0:
+                    self.publish_sensor(message)
+                message = self.get_spesific_mesage("has_traveled_set_distance")
+                if len(message) and message[0]['value']:
+                    self.publish_command(message)
+                end = time.process_time()
+                time.sleep(1/self.frequency - (end-start))
+                if self.is_closed():
+                    print("socket is closed",self.is_closed())
+                    self.connect()
+            except ValueError as e:
+                print(format(e))
+            
+    def publish_sensor(self, message):
         """
 
          Parameters.
@@ -79,9 +88,35 @@ class ethernet_sender(Thread):
         None.
 
         """
-        self.socket.send_json(message)
+        payload ={}
+        payload["payload_name"]= "sensor_data"
+        payload["payload_data"]= message
+        print("sending:",payload,"\n")
+        self.socket.send_json(payload)
 
-    def get_message(self, reduce=True):
+    def publish_command(self, message):
+        """
+
+         Parameters.
+
+        ----------
+
+        message : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        payload = {}
+        payload["payload_name"] = "commands"
+        payload["payload_data"] = message
+        print("sending: \n", payload, message)
+        self.socket.send_string(json.dumps(payload))
+        
+
+    def get_message(self, reduce=False):
         """
         Get a message from the storage box.
 
@@ -102,6 +137,15 @@ class ethernet_sender(Thread):
             return self.box.get_reduced_string()
         else:
             return self.box.get_full_string()
+
+    def get_spesific_mesage(self,tag):
+        sensor = self.box.get_sensor_from_tag(tag)
+        di=[]
+        if isinstance(sensor,dict):
+            for k,v in sensor.items():
+                di.append({"name":k,"value":v})
+
+        return di
 
     def disconnect(self):
         """
@@ -125,3 +169,6 @@ class ethernet_sender(Thread):
 
         """
         self.socket.bind(self.ip)
+    
+    def is_closed(self):
+        return self.socket.closed

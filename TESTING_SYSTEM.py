@@ -8,13 +8,17 @@ Created on Wed Feb  3 11:22:13 2021
 from NMEA_0183_parser import NMEA_parser
 from Storage_box_RPi4 import Storage_Box
 from Project_parser import parser
+from Distance_Calculator import Distance_Calculator
+import time
 def space():
     print("\n\n\n\n\n")
-def test(b=None):
+def test():
     #____________________NMEA PARSER
+
     a = NMEA_parser()
-    if not b:
-        b = Storage_Box("suitcase")
+    b = Storage_Box("suitcase")
+
+    dc = Distance_Calculator(box=b)
     test_lst=[  "$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76",
                 "$GPGSA,A,3,10,07,05,02,29,04,08,13,,,,,1.72,1.03,1.38*0A",
                 "$GPGSV,3,1,11,10,63,137,17,07,61,098,15,05,59,290,20,08,54,157,30*70",
@@ -27,7 +31,8 @@ def test(b=None):
                 "$GPGSV,3,2,11,02,39,223,16,13,28,070,17,26,23,252,,04,14,186,15*77",
                 "$GPGSV,3,3,11,29,09,301,24,16,09,020,,36,,,*76",
                 "$GPRMC,092751.000,A,5321.6802,N,00630.3371,W,0.06,31.66,280511,,,A*45"]
-    
+
+    print(dc.check_dist())
     msg1= a.parse_nmea_sentence("$YXMTW,25.6,C*13")
     print(msg1)
     
@@ -63,11 +68,25 @@ def test(b=None):
     print(b.get_in_old_style())
     space()
     print(b.get_reduced_string())
-    b.clear()
+    #b.clear()
     print(b.get_full_string())
     b.update(msg0)
     b.update(msg1)
     b.update(msg2)
     b.update(msg4)
     print(b.get_reduced_string())
+    print("_-----------_")
+    print(b.get_sensor_from_tag("GPS","latitude"))
+    print(b.get_sensor_from_tag("GPS"))
+    print(b.get_sensor_from_tag("latitude"))
+    print("_-----------_")
+    print("_-----------_")
+    print("_-----------_")
+    time.sleep(1)
+    print("ch3ckd:",dc.check_dist())
+    print("ch3ckd2:",dc.check_dist())
+
+    b.clear()
+    print(b.get_full_string(),"was cleared")
+    print("end")
 test()

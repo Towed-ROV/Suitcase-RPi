@@ -8,6 +8,7 @@ from NMEA_0183_parser import NMEA_parser
 import time
 import serial
 from threading import Thread
+from pynmea2 import NMEASentence
 
 
 class server(Thread):
@@ -41,7 +42,9 @@ class server(Thread):
         self.com_err = 0
         self.box = storage_box
         self.frequency = frequency
-
+        self.endchar = b"\n"
+        self.startchar=b"$"
+        
     def run(self):
         """
         Run the Thread, reciving nmea data and parsing it.
@@ -52,12 +55,16 @@ class server(Thread):
 
         """
         while True:
-            start = time.process_time()
-            message = self.get_message()
-
-            self.box.update(message)
-            end = time.process_time()
-            time.sleep(1/self.frequency-(end-start)+3)
+            try:
+                start = time.process_time()
+                message = self.get_message()
+                #print(message)
+                self.box.update(message)
+                end = time.process_time()
+                time.sleep(1/self.frequency-(end-start)+3)
+            except ValueError as e:
+                print(format(e))
+                
 
     def __get_current_time_str(self):
         """
@@ -102,10 +109,21 @@ class server(Thread):
         """
         try:
             if self.ready():
-                data = str(self.__ser.readline())
-
+                buffer = b""
+                endchar = b"\n"
+                startchar=b"$"
+                reading = True
+                while(reading):
+                    data = self.__ser.read(1)
+                    if str(data) == self.startchar:
+                        buffer = data
+                    buffer += data
+                    if data in self.endchar:
+                        string = str(buffer)
+                        reading= False
                 try:
-                    parsed_data = self.__parser.parse_raw_message(data)
+                    print(string)
+                    parsed_data = self.__parser.parse_raw_message(string)
                 except Exception as e:
                     print(format(e))
                     return
@@ -139,7 +157,8 @@ class server(Thread):
         """
         self.SERVER_START = "%s -:- %s" % (self.get_current_date_str(),
                                            self.get_current_time_str())
-
+    def is_connected(self):
+        return self.serial.open()  
     def ready(self):
         """
         Check if there are bytes waiting.
@@ -150,4 +169,10 @@ class server(Thread):
             returns true if the server is ready to parse an NMEA message, false
             otherwise.
         """
-        return self.__ser.inWaiting() > 10
+        return self.__ser.inWaiting() > 0
+    
+    def send(self, msg:bytes):
+        checksum = NMEASentence.checksum(msg)
+        msg += checksum
+        #print("sending: ", str(msg))
+        self.__ser.write(msg)

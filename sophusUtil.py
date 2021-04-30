@@ -23,3 +23,13 @@ def print_frame(f:line_d, *args):
             print("  |==>  message: ", arg, "\n  |------------------------------------------------------------")
     print("  |printed at line: %s\n  |in fuction: %s \n  |in document:%s" % (info.lineno, info.function, info.filename))
     print("------------------------------------------------------------\n")
+
+def normalize_dict(dic):
+    dict_line = []
+    for d in dic:
+        if isinstance(d,dict):
+            for k,v in d.items():
+                dict_line.append({k:v})
+        else:
+            dict_line.append(d)
+    return dict_line
