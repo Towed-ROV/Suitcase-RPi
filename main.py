@@ -38,11 +38,13 @@ GPS_server = gps_server("/dev/ttyAMA2", 9600, box, 10)
 dist_c =  Distance_Calculator(box,62.5,10)
 connected_echo= start_thread(echo_server)
 connected_gps = start_thread(GPS_server)
-start_thread(ethernet_sender)
+start_thread(sender)
 start_thread(dist_c)
 print("conected to echo: ", connected_echo)
 print("conected to GPS: ", connected_gps)
 print("started box software")
+
+
 i= 0
 last_time = time.monotonic()
 while True:
