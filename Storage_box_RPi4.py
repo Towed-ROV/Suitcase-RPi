@@ -241,19 +241,22 @@ class Storage_Box:
         """
         self.__json_data.clear()
 
-    def __get_name_by_tag(self, tag, subtag=None):
-        if subtag:
-            for key, value in self.__json_data.items():
-                if (tag in key and subtag in value):
-                    return key
-        else:
-            for key in self.__json_data.keys():
-                if tag in key:
-                    return key
+    def __get_name_by_tag_and_sub(self, tag, subtag):
+        for key, value in self.__json_data.items():
+            if (tag in key and subtag in value):
+                return key
+
+    def __get_name_by_tag(self, tag):
+        for key in self.__json_data.keys():
+            if tag in key:
+                return key
 
     def get_sensor_from_tag(self, tag, subtag=None):
         with self.lock:
-            name = self.__get_name_by_tag(tag, subtag)
+            if subtag:
+                name = self.__get_name_by_tag_and_sub(tag, subtag)
+            else:
+                name = self.__get_name_by_tag(tag)
             ret = self.__json_data.get(name)
             if isinstance(ret, dict):
                 return ret
