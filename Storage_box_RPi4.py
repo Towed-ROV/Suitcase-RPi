@@ -8,6 +8,7 @@ Created on Sun Jan 31 13:49:29 2021
 
 import threading
 
+
 class Storage_Box:
     """
     Stores sensor data, can give outstrings for sending at will.
@@ -25,7 +26,7 @@ class Storage_Box:
         self.origin = origin
         self.send_tags = ["depth_in_M", "latitude", "speed",
                           "north_south", "longitude", "north_south",
-                          "temprature_in_C"]
+                          "temprature_in_C", "depth_under_transuducer"]
         self.discard_tags = []
         self.lock = threading.RLock()
 
@@ -47,7 +48,7 @@ class Storage_Box:
         with self.lock:
             if type(data) is not dict:
                 if not isinstance(data, type(None)):
-                    print("%s  %s" %("data is not dict but",type(data)))
+                    print("%s  %s" % ("data is not dict but", type(data)))
                 return False
             for keys, values in data.items():
                 self.__json_data[keys] = values
@@ -144,10 +145,7 @@ class Storage_Box:
 
         """
         with self.lock:
-
             return self.__get_all()
-
-            
 
     def get_reduced_string(self):
         """
@@ -187,29 +185,30 @@ class Storage_Box:
         for keys in self.keys():
             sensor = self.get_sensor(keys)
             if isinstance(sensor, dict):
-                for key,values in sensor.items():
-                            payload_list.append(self.__add_sensor("%s_%s"%(keys,key), values))
-            else :
+                for key, values in sensor.items():
+                    payload_list.append(self.__add_sensor("%s" % (key), values))
+            else:
                 payload_list.append(self.__add_sensor(keys, sensor))
         return payload_list
 
     def __build_sub_dict(self, tags):
         payload_list = []
         for keys in self.keys():
-            sensor = self.get_sensor(keys)
             if keys in self.discard_tags:
                 continue
+
+            sensor = self.get_sensor(keys)
             if isinstance(sensor, dict):
                 if (any(tag in keys or tag in sensor.keys() for tag in tags)):
-                        iter_sensor = sensor.copy()
-                        for sub_keys in iter_sensor.keys():
-                            if not any(sub_keys in tag or tag in sub_keys
-                                       for tag in tags):
-                                del sensor[sub_keys]
-                        for key,values in sensor.items():
-                            payload_list.append(self.__add_sensor("%s_%s"%(keys,key), values))
-                    
-            elif(not sensor is None):
+                    iter_sensor = sensor.copy()
+                    for sub_keys in iter_sensor.keys():
+                        if not any(sub_keys in tag or tag in sub_keys
+                                   for tag in tags):
+                            del sensor[sub_keys]
+                    for key, values in sensor.items():
+                        payload_list.append(self.__add_sensor("%s" % (key), values))
+
+            elif (not sensor is None):
                 if any(tag in keys for tag in tags):
                     payload_list.append(self.__add_sensor(keys, sensor))
         return payload_list
@@ -225,7 +224,7 @@ class Storage_Box:
                     value_dict[key] = value
                 sensor_dict["value"] = value_dict
             else:
-                for key,value in sensor.items():
+                for key, value in sensor.items():
                     sensor_dict["value"] = value
         else:
             sensor_dict["value"] = sensor
@@ -241,22 +240,22 @@ class Storage_Box:
 
         """
         self.__json_data.clear()
-    def __get_name_by_tag(self,tag,subtag=None):
-        if subtag:
-            for ky,it in self.__json_data.items():
-                if (tag in ky and subtag in it):
-                    return ky
-        else:
-            for ky in self.__json_data.keys():
-                if tag in ky:
-                    return ky
 
-    def get_sensor_from_tag(self,tag, subtag=None):
+    def __get_name_by_tag(self, tag, subtag=None):
+        if subtag:
+            for key, value in self.__json_data.items():
+                if (tag in key and subtag in value):
+                    return key
+        else:
+            for key in self.__json_data.keys():
+                if tag in key:
+                    return key
+
+    def get_sensor_from_tag(self, tag, subtag=None):
         with self.lock:
-            name = self.__get_name_by_tag(tag,subtag)
-            #print(name,tag,subtag)
+            name = self.__get_name_by_tag(tag, subtag)
             ret = self.__json_data.get(name)
-            if isinstance(ret,dict):
+            if isinstance(ret, dict):
                 return ret
             elif not ret == None:
-                return{name:ret}
+                return {name: ret}
