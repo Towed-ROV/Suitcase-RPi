@@ -124,21 +124,21 @@ class NMEA_parser:
         return ordered_data
 
     def add_names(self, ordered_data, data_id, data):
-        for i, v in enumerate(data):
-            if v:
+        for i, value in enumerate(data):
+            if value:
                 if data_id in data_values.keys() and i < len(data_values[data_id]):
-
-                    ordered_data[data_values[data_id][i]] = v
+                    ordered_data[data_values[data_id][i]] = value
                 else:
-                    ordered_data["value_%s" % (i)] = v
+                    ordered_data["value_%s" % (i)] = value
         return ordered_data
 
     def get_unit_indecies(self, ordered_data, data_id, data):
-        if "Unit" in data_values[data_id]:
-            indexis = np.array([i for i, s in enumerate(data_values[data_id]) if s == "Unit"])
-            indexis = indexis[0:len(data) - 1]
-            for i in indexis[::-1]:
-                s = "%s_in_%s" % (data_values[data_id][i - 1], data.pop(i))
-                ordered_data[s] = data[i - 1]
-                data.pop(i - 1)
+        if data_id in data_values.keys():
+            if "Unit" in data_values[data_id]:
+                indexis = np.array([i for i, s in enumerate(data_values[data_id]) if s == "Unit"])
+                indexis = indexis[0:len(data) - 1]
+                for i in indexis[::-1]:
+                    s = "%s_in_%s" % (data_values[data_id][i - 1], data.pop(i))
+                    ordered_data[s] = data[i - 1]
+                    data.pop(i - 1)
         return ordered_data, data_id, data

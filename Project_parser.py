@@ -47,7 +47,6 @@ class parser():
         for i,v in enumerate(data):
             if v and type(v) is not str:
                 ordered_data[data[i+1]] = v
-       
         return ordered_data
     
 

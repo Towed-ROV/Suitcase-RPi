@@ -33,10 +33,38 @@ def test():
 
     print(dc.check_dist())
     msg1= a.parse_nmea_sentence("$YXMTW,25.6,C*13")
+
     print(msg1)
     
     rmsg2 = "$SDDPT,10,*56"
     msg0= a.parse_raw_message("$SDDBT,10,f,10,M,10,F*29")
+    b.update(msg0)
+    print("---------------- this->",b.get_reduced_string())
+    msg0= a.parse_raw_message("$SDDBT,12,f,10,M,10,F*2B")
+    b.update(msg0)
+
+    print("---------------- this->",b.get_reduced_string())
+    msg0= a.parse_raw_message("$SDDBT,10,f,10,M,13,F*2A")
+    b.update(msg0)
+
+    print("---------------- this->",b.get_reduced_string())
+    msg0= a.parse_raw_message("$SDDBT,10,f,14,M,10,F*2D")
+    b.update(msg0)
+
+    print("---------------- this->",b.get_reduced_string())
+    msg0= a.parse_raw_message("$SDDBT,11,f,10,M,10,F*28")
+    b.update(msg0)
+
+    print("---------------- this->",b.get_reduced_string())
+    msg0= a.parse_raw_message("$SDVLW,10,N,5,NF*28")
+    b.update(msg0)
+
+    print("---------------- this->",b.get_full_string())
+    msg0= a.parse_raw_message("$SDDBT,10,f,102,M,102,F*29")
+    b.update(msg0)
+
+    print("---------------- this->",b.get_reduced_string())
+    print("---------------- this->",b.get_reduced_string())
     msg4= a.parse_raw_message("$GPAAM,A,A,0.10,N,WPTNME*32")
     msg2 = a.parse_raw_message(rmsg2)
     print("nmea parser parsed/n %s \n as:\n %s\n"%(rmsg2,msg2))
@@ -83,8 +111,8 @@ def test():
     print("_-----------_")
     time.sleep(1)
     print("ch3ckd:",dc.check_dist())
-    print("ch3ckd2:",dc.check_dist())
-
+    print("ch3ckd2:",dc.getmsg(dc.check_dist()))
+    print(b.get_sensor_from_tag("depth_in_M"))
     b.clear()
     print(b.get_full_string(),"was cleared")
     print("end")

@@ -24,7 +24,7 @@ class Storage_Box:
     def __init__(self, origin):
         self.__json_data = {}
         self.origin = origin
-        self.send_tags = ["depth_in_M", "latitude", "speed",
+        self.send_tags = ["depth_under_boat", "latitude", "speed",
                           "north_south", "longitude", "north_south",
                           "temprature_in_C", "depth_under_transuducer"]
         self.discard_tags = []
@@ -75,6 +75,12 @@ class Storage_Box:
                 print(format(e))
 
     def __get_value(self, value_name, sensor):
+        """
+        returns the value of a spesific sensor
+        :param value_name:
+        :param sensor: the sensor you want the value from
+        :return:
+        """
         return sensor[value_name]
 
     def get_sensor_old(self, category, t=None):
@@ -163,6 +169,10 @@ class Storage_Box:
             return ret_dict
 
     def __get_sentence(self):
+        """
+        returns a string with the json data stored in the storage box.
+        :return:
+        """
         return {"payload_name": "sensor_data",
                 "payload_data": self.__json_data}
 
@@ -181,6 +191,10 @@ class Storage_Box:
         return self.__json_data.keys()
 
     def __build_dict(self):
+        """
+        return a list of values from the storage box, the list has one of each value that is stored in the box.
+        :return:
+        """
         payload_list = []
         for keys in self.keys():
             sensor = self.get_sensor(keys)
@@ -192,6 +206,12 @@ class Storage_Box:
         return payload_list
 
     def __build_sub_dict(self, tags):
+        """
+        returns a list containing all objects form the storage box that has one of the tags provided either in the
+        sensor name, or in the name of one of the values of the sensors.
+        :param tags: tags to check
+        :return:
+        """
         payload_list = []
         for keys in self.keys():
             if keys in self.discard_tags:
@@ -214,6 +234,13 @@ class Storage_Box:
         return payload_list
 
     def __add_sensor(self, name, sensor):
+        """
+        adds a sensor to a dictonary with the parsing for theis system, a sensor can have multiple key value pairs,
+        since this is common in the NMEA protocoll.
+        :param name: the name of the sensor
+        :param sensor: the valuesd of the sensors-
+        :return: a dictonary with sensor values
+        """
         sensor_dict = {}
         sensor_dict["name"] = name
         sensor_dict["value"] = None
@@ -242,6 +269,14 @@ class Storage_Box:
         self.__json_data.clear()
 
     def __get_name_by_tag_and_sub(self, tag, subtag):
+        """
+        gets the name of a sensor wich name containes the tag provided AND where one of the value keys in the sensor
+        contains the subtag provided. use full if the system imports from multiple different sensor systems with similar
+        names.
+        :param tag: a tag for the key you are looking for
+        :param subtag: a tag for the
+        :return:
+        """
         for key, value in self.__json_data.items():
             if (tag in key and subtag in value):
                 return key

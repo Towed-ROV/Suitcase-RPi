@@ -144,7 +144,6 @@ class ethernet_sender(Thread):
         if isinstance(sensor,dict):
             for k,v in sensor.items():
                 di.append({"name":k,"value":v})
-
         return di
 
     def disconnect(self):
