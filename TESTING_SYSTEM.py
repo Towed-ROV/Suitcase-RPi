@@ -30,7 +30,18 @@ def test():
                 "$GPGSV,3,2,11,02,39,223,16,13,28,070,17,26,23,252,,04,14,186,15*77",
                 "$GPGSV,3,3,11,29,09,301,24,16,09,020,,36,,,*76",
                 "$GPRMC,092751.000,A,5321.6802,N,00630.3371,W,0.06,31.66,280511,,,A*45"]
-
+    test_lst2 = ["$GPGGA,092750.000,4321.6802,N,00330.3372,W,1,8,1.03,61.7,M,55.2,M,,*72",
+                "$GPGSA,A,3,10,07,05,02,29,04,08,13,,,,,1.72,1.03,1.38*0A",
+                "$GPGSV,3,1,11,10,63,137,17,07,61,098,15,05,59,290,20,08,54,157,30*70",
+                "$GPGSV,3,2,11,02,39,223,19,13,28,070,17,26,23,252,,04,14,186,14*79",
+                "$GPGSV,3,3,11,29,09,301,24,16,09,020,,36,,,*76",
+                "$GPRMC,092750.000,A,4321.6802,N,00230.3372,W,0.02,31.66,280511,,,A*46",
+                "$GPGGA,092751.000,4321.6802,N,00130.3371,W,1,8,1.03,61.7,M,55.3,M,,*73",
+                "$GPGSA,A,3,10,07,05,02,29,04,08,13,,,,,1.72,1.03,1.38*0A",
+                "$GPGSV,3,1,11,10,63,137,17,07,61,098,15,05,59,290,20,08,54,157,30*70",
+                "$GPGSV,3,2,11,02,39,223,16,13,28,070,17,26,23,252,,04,14,186,15*77",
+                "$GPGSV,3,3,11,29,09,301,24,16,09,020,,36,,,*76",
+                "$GPRMC,092751.000,A,4321.6802,N,00930.3371,W,0.06,31.66,280511,,,A*4B"]
     print(dc.check_dist())
     msg1= a.parse_nmea_sentence("$YXMTW,25.6,C*13")
 
@@ -104,13 +115,21 @@ def test():
     print(b.get_reduced_string())
     print("_-----------_")
     print(b.get_sensor_from_tag("GPS","latitude"))
-    print(b.get_sensor_from_tag("GPS"))
+    print(b.pop_sensor_from_tag("depth_of_water"))
+    print(b.get_sensor_from_tag("depth_of_water"))
     print(b.get_sensor_from_tag("latitude"))
     print("_-----------_")
     print("_-----------_")
     print("_-----------_")
     time.sleep(1)
     print("ch3ckd:",dc.check_dist())
+    print("ch3ckd2:",dc.getmsg(dc.check_dist()))
+    for i in range(len(test_lst2)):
+        test_lst2[i] = a.parse_raw_message(test_lst2[i])
+    for dicts in test_lst2:
+        b.update(dicts)
+    print("ch3ckd2:",dc.getmsg(dc.check_dist()))
+
     print("ch3ckd2:",dc.getmsg(dc.check_dist()))
     print(b.get_sensor_from_tag("depth_in_M"))
     b.clear()

@@ -297,3 +297,15 @@ class Storage_Box:
                 return ret
             elif not ret == None:
                 return {name: ret}
+
+    def pop_sensor_from_tag(self, tag, subtag=None):
+        with self.lock:
+            if subtag:
+                name = self.__get_name_by_tag_and_sub(tag, subtag)
+            else:
+                name = self.__get_name_by_tag(tag)
+            ret = self.__json_data.pop(name)
+            if isinstance(ret, dict):
+                return ret
+            elif not ret == None:
+                return {name: ret}

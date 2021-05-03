@@ -139,7 +139,7 @@ class ethernet_sender(Thread):
             return self.box.get_full_string()
 
     def get_spesific_mesage(self,tag):
-        sensor = self.box.get_sensor_from_tag(tag)
+        sensor = self.box.pop_sensor_from_tag(tag)
         di=[]
         if isinstance(sensor,dict):
             for k,v in sensor.items():

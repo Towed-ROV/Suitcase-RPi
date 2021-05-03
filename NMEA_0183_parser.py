@@ -97,9 +97,7 @@ class NMEA_parser:
         try:
             start = raw_sentence.find('$')
             if start == -1:
-                start = raw_sentence.find('!')
-                if start == -1:
-                    return
+                start = raw_sentence.index('!')
             stop = raw_sentence.index('*') + 3
         except:
             raise Exception("error: message has no checksum: ", raw_sentence)
@@ -135,7 +133,10 @@ class NMEA_parser:
     def get_unit_indecies(self, ordered_data, data_id, data):
         if data_id in data_values.keys():
             if "Unit" in data_values[data_id]:
-                indexis = np.array([i for i, s in enumerate(data_values[data_id]) if s == "Unit"])
+                data_structure = data_values[data_id].copy()
+                if len(data_structure) > len(data_id):
+                    data_structure = data_structure[0:len(data) - 1]
+                indexis = np.array([i for i, s in enumerate(data_structure) if s == "Unit"])
                 indexis = indexis[0:len(data) - 1]
                 for i in indexis[::-1]:
                     s = "%s_in_%s" % (data_values[data_id][i - 1], data.pop(i))
