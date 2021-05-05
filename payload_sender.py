@@ -62,8 +62,9 @@ class ethernet_sender(Thread):
                 message = self.get_message(reduce=True)
                 if message and len(message) >0:
                     self.publish_sensor(message)
-                message = self.get_spesific_mesage("has_traveled_set_distance")
+                message = self.pop_spesific_mesage("has_traveled_set_distance")
                 if len(message) and message[0]['value']:
+                    message[0].update({"depth_beneath_boat",self.get})
                     self.publish_command(message)
                 end = time.process_time()
                 time.sleep(1/self.frequency - (end-start))
@@ -138,12 +139,20 @@ class ethernet_sender(Thread):
         else:
             return self.box.get_full_string()
 
-    def get_spesific_mesage(self,tag):
+    def pop_spesific_mesage(self,tag):
         sensor = self.box.pop_sensor_from_tag(tag)
         di=[]
         if isinstance(sensor,dict):
             for k,v in sensor.items():
                 di.append({"name":k,"value":v})
+        return di
+
+    def get_spesific_mesage(self,tag):
+        sensor = self.box.get_sensor_from_tag(tag)
+        di = []
+        if isinstance(sensor, dict):
+            for k, v in sensor.items():
+                di.append({"name": k, "value": v})
         return di
 
     def disconnect(self):

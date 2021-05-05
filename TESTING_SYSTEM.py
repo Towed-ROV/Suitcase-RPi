@@ -52,21 +52,24 @@ def test():
     b.update(msg0)
     print("---------------- this->",b.get_reduced_string())
     msg0= a.parse_raw_message("$SDDBT,12,f,10,M,10,F*2B")
+
+    print("items: ", msg0)
+    b.update(msg0)
+    print("items: ", msg0)
+    print("items: ", msg0.items())
+    print("---------------- this->",b.get_reduced_string())
+    msg0= a.parse_raw_message("$SDDBT,10,f,,M,,F*29")
     b.update(msg0)
 
     print("---------------- this->",b.get_reduced_string())
-    msg0= a.parse_raw_message("$SDDBT,10,f,10,M,13,F*2A")
+    msg0= a.parse_raw_message("$SDDBT,10,f,14,M,,F*2C")
     b.update(msg0)
 
     print("---------------- this->",b.get_reduced_string())
-    msg0= a.parse_raw_message("$SDDBT,10,f,14,M,10,F*2D")
+    msg0= a.parse_raw_message("$SDDBT,,f,10,M,10,F*28")
     b.update(msg0)
 
-    print("---------------- this->",b.get_reduced_string())
-    msg0= a.parse_raw_message("$SDDBT,11,f,10,M,10,F*28")
-    b.update(msg0)
-
-    print("---------------- this->",b.get_reduced_string())
+    print("---------------- this->",b.get_full_string())
     msg0= a.parse_raw_message("$SDVLW,10,N,5,NF*28")
     b.update(msg0)
 
