@@ -1,8 +1,19 @@
 import serial
 import time
 from threading import Thread
+
+
 class Serial_Writer(Thread):
+    """
+
+    """
+
     def __init__(self, com_port, baud_rate):
+        """
+
+        :param com_port:
+        :param baud_rate:
+        """
         Thread.__init__(self)
         self.com_port = com_port
         self.baud_rate = baud_rate
@@ -10,6 +21,10 @@ class Serial_Writer(Thread):
         self.last_output = ""
 
     def run(self):
+        """
+
+        :return:
+        """
         self.serial_port.open()
         while True:
             try:
@@ -18,8 +33,13 @@ class Serial_Writer(Thread):
                 print(e)
 
     def write_serial_data(self, message):
+        """
+
+        :param message:
+        :return:
+        """
         if self.serial_port.isOpen():
-            output =  message 
+            output = message
 
             if output != "self.last_output":
 
@@ -34,6 +54,7 @@ class Serial_Writer(Thread):
         else:
             self.serial_port.open()
             print('Serial port not open : ' + str(self.com_port))
+
 
 if __name__ == "__main__":
     ser = Serial_Writer('com8', 4800)

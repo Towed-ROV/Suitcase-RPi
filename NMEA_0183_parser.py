@@ -24,6 +24,8 @@ class NMEA_parser:
         """ Initialize class, sets the amount of errors to 0. """
         self.__parser_error_count = 0
 
+        self.parser = pynmea2
+
     def parse_nmea_sentence(self, sentence):
         """
         takes a string as an input, checks the length of the string
@@ -51,7 +53,7 @@ class NMEA_parser:
         """
         # print(sentence)
         try:
-            parsed_sentence = pynmea2.parse(sentence)
+            parsed_sentence = self.parser.parse(sentence)
             msg_type = parsed_sentence.sentence_type
 
             data = self.__order_data(self.__clean_data(parsed_sentence.data), msg_type)
@@ -72,12 +74,16 @@ class NMEA_parser:
             print('parser error count: ', self.__parser_error_count)
 
     def set_spesial_conditions(self, msg):
+        """
+
+        :param msg:
+        :return:
+        """
         for key, condition in CONDITIONS.items():
             if key in msg:
                 msg[key] = condition(msg[key])
                 if msg[key] == None:
                     print("found none")
-
 
         return msg
 
@@ -107,6 +113,11 @@ class NMEA_parser:
         return self.parse_nmea_sentence(sentence)
 
     def nmea_strip(self, raw_sentence):
+        """
+
+        :param raw_sentence:
+        :return:
+        """
         # finds where the NMEA sentence starts or stops. if the message does
         # not have a "$" or "!" sign it's discarded. if a message does not
         # have a "*" sign, the checksum is missing and the index function
@@ -122,17 +133,33 @@ class NMEA_parser:
         return raw_sentence[start + 1:stop]
 
     def __clean_data(self, data):
+        """
+
+        :param data:
+        :return:
+        """
         return [None if not v else float(v)
         if all((c in set('1234567890.'))
                for c in v) else v for v in data]
 
     def __get_data_type(self, identifier):
+        """
+
+        :param identifier:
+        :return:
+        """
         if identifier in data_types:
             return data_types[identifier]
         else:
             return "%s: %s \n" % ("unknow ID", identifier)
 
     def __order_data(self, data, data_id):
+        """
+
+        :param data:
+        :param data_id:
+        :return:
+        """
         ordered_data = {}
         ordered_data, data_id, data = self.get_unit_indecies(ordered_data, data_id, data)
         ordered_data = self.add_names(ordered_data, data_id, data)
@@ -153,11 +180,11 @@ class NMEA_parser:
                 data_structure = data_values[data_id].copy()
                 if len(data_structure) > len(data):
                     data_structure = data_structure[0:len(data)]
-                print(data_structure,data_id,data)
+                print(data_structure, data_id, data)
                 indexis = np.array([i for i, s in enumerate(data_structure) if s == "Unit"])
-                print(indexis,len(data))
+                print(indexis, len(data))
                 indexis = indexis[0:len(data) - 1]
-                print(indexis,len(data))
+                print(indexis, len(data))
                 for i in indexis[::-1]:
                     s = "%s_in_%s" % (data_values[data_id][i - 1], data.pop(i))
                     ordered_data[s] = data[i - 1]

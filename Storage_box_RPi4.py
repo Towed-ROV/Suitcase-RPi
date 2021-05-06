@@ -7,6 +7,7 @@ Created on Sun Jan 31 13:49:29 2021
 """
 
 import threading
+from sophusUtil import print_frame
 
 
 class Storage_Box:
@@ -164,7 +165,6 @@ class Storage_Box:
 
         """
         with self.lock:
-            ret_dict = {}
             ret_dict = self.__build_sub_dict(self.send_tags)
             return ret_dict
 
@@ -282,11 +282,22 @@ class Storage_Box:
                 return key
 
     def __get_name_by_tag(self, tag):
+        """
+
+        :param tag:
+        :return:
+        """
         for key in self.__json_data.keys():
             if tag in key:
                 return key
 
     def get_sensor_from_tag(self, tag, subtag=None):
+        """
+
+        :param tag:
+        :param subtag:
+        :return:
+        """
         with self.lock:
             if subtag:
                 name = self.__get_name_by_tag_and_sub(tag, subtag)
@@ -299,13 +310,22 @@ class Storage_Box:
                 return {name: ret}
 
     def pop_sensor_from_tag(self, tag, subtag=None):
+        """
+
+        :param tag:
+        :param subtag:
+        :return:
+        """
         with self.lock:
-            if subtag:
-                name = self.__get_name_by_tag_and_sub(tag, subtag)
-            else:
-                name = self.__get_name_by_tag(tag)
-            ret = self.__json_data.pop(name)
-            if isinstance(ret, dict):
-                return ret
-            elif not ret == None:
-                return {name: ret}
+            try:
+                if subtag:
+                    name = self.__get_name_by_tag_and_sub(tag, subtag)
+                else:
+                    name = self.__get_name_by_tag(tag)
+                ret = self.__json_data.pop(name)
+                if isinstance(ret, dict):
+                    return ret
+                elif not ret == None:
+                    return {name: ret}
+            except KeyError as key_e:
+                print_frame("none existant key: ", key_e)

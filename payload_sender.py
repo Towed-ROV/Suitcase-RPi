@@ -9,6 +9,7 @@ import zmq
 import time
 import json
 
+
 class ethernet_sender(Thread):
     """
     Ethernet transmitter.
@@ -60,20 +61,20 @@ class ethernet_sender(Thread):
             try:
                 start = time.process_time()
                 message = self.get_message(reduce=True)
-                if message and len(message) >0:
+                if message and len(message) > 0:
                     self.publish_sensor(message)
                 message = self.pop_spesific_mesage("has_traveled_set_distance")
                 if len(message) and message[0]['value']:
-                    message[0].update({"depth_beneath_boat",self.get})
+                    message[0].update({"depth_beneath_boat", self.get_spesific_mesage("depth_beneath_boat")})
                     self.publish_command(message)
                 end = time.process_time()
-                time.sleep(1/self.frequency - (end-start))
+                time.sleep(1 / self.frequency - (end - start))
                 if self.is_closed():
-                    print("socket is closed",self.is_closed())
+                    print("socket is closed", self.is_closed())
                     self.connect()
             except ValueError as e:
                 print(format(e))
-            
+
     def publish_sensor(self, message):
         """
 
@@ -89,10 +90,10 @@ class ethernet_sender(Thread):
         None.
 
         """
-        payload ={}
-        payload["payload_name"]= "sensor_data"
-        payload["payload_data"]= message
-        print("sending:",payload,"\n")
+        payload = {}
+        payload["payload_name"] = "sensor_data"
+        payload["payload_data"] = message
+        print("sending:", payload, "\n")
         self.socket.send_json(payload)
 
     def publish_command(self, message):
@@ -115,7 +116,6 @@ class ethernet_sender(Thread):
         payload["payload_data"] = message
         print("sending: \n", payload, message)
         self.socket.send_string(json.dumps(payload))
-        
 
     def get_message(self, reduce=False):
         """
@@ -139,15 +139,25 @@ class ethernet_sender(Thread):
         else:
             return self.box.get_full_string()
 
-    def pop_spesific_mesage(self,tag):
+    def pop_spesific_mesage(self, tag):
+        """
+
+        :param tag:
+        :return:
+        """
         sensor = self.box.pop_sensor_from_tag(tag)
-        di=[]
-        if isinstance(sensor,dict):
-            for k,v in sensor.items():
-                di.append({"name":k,"value":v})
+        di = []
+        if isinstance(sensor, dict):
+            for k, v in sensor.items():
+                di.append({"name": k, "value": v})
         return di
 
-    def get_spesific_mesage(self,tag):
+    def get_spesific_mesage(self, tag):
+        """
+
+        :param tag:
+        :return:
+        """
         sensor = self.box.get_sensor_from_tag(tag)
         di = []
         if isinstance(sensor, dict):
@@ -176,7 +186,16 @@ class ethernet_sender(Thread):
         None.
 
         """
-        self.socket.bind(self.ip)
-    
+        if self.is_closed():
+            try:
+                print("error: socket closed")
+                self.socket.bind(self.ip)
+            except Exception as e:
+                print(format(e))
+
     def is_closed(self):
+        """
+
+        :return:
+        """
         return self.socket.closed

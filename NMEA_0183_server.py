@@ -18,7 +18,7 @@ class server(Thread):
     Then it stores the message in a storage box.
     """
 
-    def __init__(self, port, baudrate, storage_box, frequency):
+    def __init__(self, port: str, baudrate: int, storage_box, frequency: float):
         """
         init.
 
@@ -154,6 +154,10 @@ class server(Thread):
                                            str(self.get_current_time_str()))
 
     def is_connected(self):
+        """
+
+        :return:
+        """
         return self.serial.open()
 
     def ready(self):

@@ -6,6 +6,12 @@ import time
 
 class Distance_Calculator(Thread):
     def __init__(self, box: Storage_Box, start_lat=62.5, to_travel=10):
+        """
+        Args:
+            box (Storage_Box):
+            start_lat:
+            to_travel:
+        """
         Thread.__init__(self)
         self.box = box
         self.last_lat = start_lat
@@ -21,6 +27,11 @@ class Distance_Calculator(Thread):
             time.sleep(1)
 
     def calculate_dist(self, lat1, lon1):
+        """
+        Args:
+            lat1:
+            lon1:
+        """
         lat1 = deg_to_rad(lat1)
         lon1 = deg_to_rad(lon1)
         dist = calc_big_circle_dist(lat1=lat1, lat2=self.last_lat, lon1=lon1, lon2=self.last_lon,
@@ -28,6 +39,11 @@ class Distance_Calculator(Thread):
         return dist
 
     def moved_since_last(self, n_lat, n_lon):
+        """
+        Args:
+            n_lat:
+            n_lon:
+        """
         return self.calculate_dist(n_lat, n_lon)
 
     def check_dist(self):
@@ -46,6 +62,11 @@ class Distance_Calculator(Thread):
         return False
 
     def check_dist_t(self, la, lo):
+        """
+        Args:
+            la:
+            lo:
+        """
         lat = la
         lon = lo
         dist = self.moved_since_last(lat, lon)
@@ -55,6 +76,10 @@ class Distance_Calculator(Thread):
             return False
 
     def update_earth_radius(self, n_lat=None):
+        """
+        Args:
+            n_lat:
+        """
         if not n_lat:
             n_lat = self.last_lat
         self.earth_radius = earth_radius_at_lat(n_lat)

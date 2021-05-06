@@ -18,7 +18,13 @@ deg_to_rad = lambda deg: deg * (PI / 180)
 rad_to_deg = lambda rad: rad * (180 / PI)
 
 
-def print_frame(f: line_d, *args):
+def print_frame( *args):
+    """
+    Args:
+        f (line_d):
+        *args:
+    """
+    f = inspect.currentframe().f_back
     info = inspect.getframeinfo(f)
     print("\n------------------------------------------------------------")
     if len(args):
@@ -29,6 +35,10 @@ def print_frame(f: line_d, *args):
 
 
 def normalize_dict(dic):
+    """
+    Args:
+        dic:
+    """
     dict_line = []
     for d in dic:
         if isinstance(d, dict):
@@ -37,3 +47,23 @@ def normalize_dict(dic):
         else:
             dict_line.append(d)
     return dict_line
+
+
+def start_thread(thread):
+    """
+    starts runing a thread for serial communication. handles exption connected to the starting of the tread.
+    Args:
+        thread: the thread that starts.
+    """
+    connected = False
+    try:
+        thread.daemon = True
+        thread.start()
+        connected = True
+    except serial.serialutil.SerialException as e:
+        print(format(e))
+        return connected
+    except Exception as e:
+        print(format(e))
+        return connected
+    return connected
