@@ -14,8 +14,8 @@ pytagoras_round = lambda x, y, desimal: round(pytagoras(x, y), desimal)
 calc_big_circle_dist = lambda lat1, lat2, lon1, lon2, radius: (
             2 * radius * asin(sqrt(sin((lat2 - lat1) / 2) ** 2 + cos(lat1) * cos(lat2) * sin((lon2 - lon1) / 2) ** 2)))
 print_line = lambda *args: print_frame(line_d().f_back, *args)
-deg_to_rad = lambda deg: deg * (PI / 180)
-rad_to_deg = lambda rad: rad * (180 / PI)
+deg_to_rad = lambda deg: float(deg) * (PI / 180)
+rad_to_deg = lambda rad: float(rad) * (180 / PI)
 
 
 def print_frame( *args):

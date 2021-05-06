@@ -19,9 +19,9 @@ from sophusUtil import start_thread, print_frame
 print_frame("system starting!", ("connect echo, gps and sender."))
 
 box = Storage_Box("suitcase")
-sender = ethernet_sender('tcp://0.0.0.0:8767', box, 2)
-echo_server = nmea_server(port="/dev/ttyAMA0", baudrate=4800, storage_box=box, frequency=10)
-GPS_server = gps_server(port="/dev/ttyAMA2", baudrate=9600, storage_box=box, frequency=10)
+sender = ethernet_sender('tcp://127.0.0.1:8787', box, 2)
+echo_server = nmea_server(port="COM2", baudrate=4800, storage_box=box, frequency=10)
+GPS_server = gps_server(port="COM31", baudrate=9600, storage_box=box, frequency=10)
 distance_calc = Distance_Calculator(box)
 
 started_echo_server = start_thread(echo_server)
