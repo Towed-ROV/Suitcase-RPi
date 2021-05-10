@@ -19,13 +19,16 @@ class Storage_Box:
     parsing.
 
     the class is has added tags and thread safety to a normal dictonay class.
-
     """
 
     def __init__(self, origin):
+        """
+        initilaize the system, and sets tags.
+        :param origin: the location of the sotrage mox
+        """
         self.__json_data = {}
         self.origin = origin
-        self.send_tags = ["depth_under_boat", "latitude", "speed",
+        self.send_tags = ["depth_beneath_boat", "latitude", "speed",
                           "north_south", "longitude", "north_south",
                           "temprature_in_C", "depth_under_transuducer"]
         self.discard_tags = []
@@ -33,18 +36,14 @@ class Storage_Box:
 
     def update(self, data):
         """
-        Update the dictonary with new values while beeing threadsafe.
+         Update the dictonary with new values while beeing threadsafe.
 
-        Parameters.
-
+        :param.
         ----------
-        data : TYPE
-            DESCRIPTION.
+        :data : dict
+            a value : key pair or a set of value key pairs to add to the system.
 
-        Returns
-        -------
-        None.
-
+        :return: true if sucessful
         """
         with self.lock:
             if type(data) is not dict:
@@ -55,71 +54,47 @@ class Storage_Box:
                 self.__json_data[keys] = values
             return True
 
-    def get_sensor(self, category):
+    def get_sensor(self, key):
         """
-        Parameters.
-
-        ----------
-        category : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
+        get a sensor with a key
+        :param key:
+        :return: a value defined by the key given
         """
         with self.lock:
             try:
-                return self.__json_data[category]
+                return self.__json_data[key]
             except Exception as e:
                 print(format(e))
 
-    def __get_value(self, value_name, sensor):
+    def __get_value(self, key, dict):
         """
-        returns the value of a spesific sensor
+        returns a value from a spesific sensor. the sensor is s dictonary
         :param value_name:
-        :param sensor: the sensor you want the value from
+        :param sensor:
         :return:
         """
-        return sensor[value_name]
+        return dict[key]
 
-    def get_sensor_old(self, category, t=None):
+    def get_sensor_old(self, key):
         """
-
-        Parameters.
-
-        ----------
-        category : TYPE
-            DESCRIPTION.
-
-        t : TYPE, optional
-            DESCRIPTION. The default is None.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
+        the old parsing for the system, was used before the new protocol was added.
+        :param key: the sensor to get
+        :return:
         """
         with self.lock:
-            sens = self.get_sensor(category)
+            sens = self.get_sensor(key)
             return_list = []
             if isinstance(sens, dict):
-                for key, value in sens.items():
-                    return_list.append("<%s_%s:%s>" % (category, key, value))
+                for subkey, value in sens.items():
+                    return_list.append("<%s_%s:%s>" % (key, subkey, value))
             else:
-                return_list.append("<%s:%s>" % (category, sens))
+                return_list.append("<%s:%s>" % (key, sens))
             return return_list
 
     def get_in_old_style(self):
         """
-        Send the data using the previous data structure.
-
-        Returns.
-        -------
-        ret_lst : TYPE
-            DESCRIPTION.
+        returns the storage in the old parsing
+        :return: string with old parisng
         """
         with self.lock:
             ret_lst = []
@@ -130,39 +105,24 @@ class Storage_Box:
 
     def __get_all(self):
         """
-        Return all data saved in the storage box, parsed for sending.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
+        gets the entire storage, from the class.
+        :return: a dictonary containing the entire storage.
         """
         ret_dict = self.__build_dict()
         return ret_dict
 
-    def get_full_string(self):
+    def get_full(self):
         """
-        Return a string verison of the fill string, parsed forsending.
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
+        returns the full storage as a a dictonary. this method is thread safe.
+        :return: dict with the data
         """
         with self.lock:
             return self.__get_all()
 
-    def get_reduced_string(self):
+    def get_reduced(self):
         """
-        Return a string with all data that contains the relevant tags.
-
-        Returns
-        -------
-        TYPE: String
-            A json string parsed as determined by the project.
-
+        returns a reduced storage as a dictonary, only the sensors saved in the send tags are returned.
+        :return: dict with only the key value pairs that have a mathcing tag.
         """
         with self.lock:
             ret_dict = self.__build_sub_dict(self.send_tags)
@@ -178,15 +138,8 @@ class Storage_Box:
 
     def keys(self):
         """
-        Get the keys in the storage box.
-
-        The keys consists of all the sensors saved in the system.
-
-        Returns
-        -------
-        TYPE: List
-            a list off all the sensors in the system..
-
+        returns all the keys in the system
+        :return: dict.keys in the system
         """
         return self.__json_data.keys()
 
@@ -259,12 +212,7 @@ class Storage_Box:
 
     def clear(self):
         """
-        Clear the data from the storage box.
-
-        Returns
-        -------
-        None.
-
+        clears the storage.
         """
         self.__json_data.clear()
 
@@ -283,9 +231,10 @@ class Storage_Box:
 
     def __get_name_by_tag(self, tag):
         """
-
-        :param tag:
-        :return:
+        returns the a key if that key contains a specified tag, for example can return the first depth value it finds if
+        "depth" is a tag
+        :param tag:str that you want to search for
+        :return: str with the key if there is one None oterwise.
         """
         for key in self.__json_data.keys():
             if tag in key:
@@ -293,10 +242,12 @@ class Storage_Box:
 
     def get_sensor_from_tag(self, tag, subtag=None):
         """
-
-        :param tag:
-        :param subtag:
-        :return:
+        checks the system for a tag, if the tag is pressent returns the sensor assosiated with that tag, else it returns'
+        None. the method takes in both a tag and a subtag, if the subtag is provided it only returns if the sensor
+        contains a valuekey that matches the subtag and a key that matches the tag.
+        :param tag: the tag to search for.
+        :param subtag: the subtag to search for
+        :return: a dict with the value if its found else None
         """
         with self.lock:
             if subtag:
@@ -311,10 +262,13 @@ class Storage_Box:
 
     def pop_sensor_from_tag(self, tag, subtag=None):
         """
-
-        :param tag:
-        :param subtag:
-        :return:
+        checks the system for a tag, if the tag is pressent returns the sensor assosiated with that tag, else it returns'
+        None. the method takes in both a tag and a subtag, if the subtag is provided it only returns if the sensor
+        contains a valuekey that matches the subtag and a key that matches the tag. when it gets the sensor it removes
+        it from the system.
+        :param tag: the tag to search for.
+        :param subtag: the subtag to search for
+        :return: a dict with the value if its found else None
         """
         with self.lock:
             try:

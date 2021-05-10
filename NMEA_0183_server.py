@@ -50,20 +50,20 @@ class server(Thread):
         """
         Run the Thread, reciving nmea data and parsing it.
 
-        Returns
-        -------
-        None.
-
         """
 
         last = time.monotonic()
         while True:
             try:
                 current = time.monotonic()
-                if current - last > 1 / self.frequency:
+                dt =current - last
+                if dt > 1 / self.frequency:
                     message = self.get_message()
                     self.box.update(message)
                     last = current
+                else:
+                    print("ImpoSleep",dt,1/self.frequency)
+                    time.sleep(self.frequency-dt)
             except ValueError as e:
                 print(format(e))
 
@@ -120,6 +120,12 @@ class server(Thread):
             self.retry('decode error: ', e)
 
     def retry(self, error_type, error):
+        """
+        tries to get a message again if the system fails, if it fails more than 5 times an error is raised.
+        :param error_type:
+        :param error:
+        :return:
+        """
         print(error_type, format(error))
         time.sleep(0.1)
         self.com_err += 1
@@ -129,6 +135,11 @@ class server(Thread):
         raise error
 
     def buffer_read(self):
+        """
+        a buffer reader that reads from a spesified value to another spesified value. returns a string when it has
+        read a line of data.
+        :return:
+        """
         buffer = b""
         reading = True
         while (reading):
@@ -155,8 +166,7 @@ class server(Thread):
 
     def is_connected(self):
         """
-
-        :return:
+        :return: true if the serial is open.
         """
         return self.serial.open()
 
@@ -173,6 +183,11 @@ class server(Thread):
         return self.__ser.inWaiting() > 0
 
     def send(self, msg: bytes):
+        """
+        sends data over the serial.
+        :param msg:
+        :return:
+        """
         checksum = NMEASentence.checksum(msg)
         msg += checksum
         # print("sending: ", str(msg))

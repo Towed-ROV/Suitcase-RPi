@@ -19,24 +19,10 @@ class ethernet_sender(Thread):
 
     def __init__(self, ip, storage_box, frequncy):
         """
-         Parameters.
-
-        ----------
-
-        ip : TYPE
-
-            DESCRIPTION.
-        storage_box : TYPE
-            DESCRIPTION.
-
-        frequncy : TYPE
-
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-
+        initilaizes the server, with setting the zmq socket, and adding the storage box
+        :param ip:
+        :param storage_box:
+        :param frequncy:
         """
         Thread.__init__(self)
         self.ip = ip
@@ -48,47 +34,52 @@ class ethernet_sender(Thread):
 
     def run(self):
         """
-
-
-        Return.
-
-        -------
-
-        None.
-
+        gets and sends data from the storage box, tries to reconect if it'sclosed
+        :return:
         """
         while True:
             try:
-                start = time.process_time()
-                message = self.get_message(reduce=True)
-                if message and len(message) > 0:
-                    self.publish_sensor(message)
-                message = self.pop_spesific_mesage("has_traveled_set_distance")
-                if len(message) and message[0]['value']:
-                    message[0].update({"depth_beneath_boat", self.get_spesific_mesage("depth_beneath_boat")})
-                    self.publish_command(message)
-                end = time.process_time()
-                time.sleep(1 / self.frequency - (end - start))
                 if self.is_closed():
                     print("socket is closed", self.is_closed())
-                    self.connect()
+                start = time.process_time()
+
+                self.send_sensors()
+                self.send_commands()
+
+                dt = start - time.process_time()
+                if 1 / self.frequency > dt:
+                    time.sleep(1 / self.frequency - dt)
+
             except ValueError as e:
                 print(format(e))
+            except TypeError as e:
+                print(format(e))
+
+    def send_sensors(self):
+        """
+        send sensor data over ZMQ
+        :return:
+        """
+        message = self.get_message(reduce=True)
+        if message and len(message) > 0:
+            self.publish_sensor(message)
+
+    def send_commands(self):
+        """
+        send commands over ZMQ
+        :return:
+        """
+        message = self.pop_spesific_mesage("has_traveled_set_distance")
+        if len(message) and message[0]['value']:
+            print(self.get_spesific_mesage("depth_beneath_boat"))
+            message[0].update({"depth_beneath_boat", self.get_spesific_mesage("depth_beneath_boat")})
+            self.publish_command(message)
 
     def publish_sensor(self, message):
         """
-
-         Parameters.
-
-        ----------
-
-        message : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-
+        publishes a zmq message with the "sensor data" payload name.
+        :param message: message to be published
+        :return: None
         """
         payload = {}
         payload["payload_name"] = "sensor_data"
@@ -98,18 +89,9 @@ class ethernet_sender(Thread):
 
     def publish_command(self, message):
         """
-
-         Parameters.
-
-        ----------
-
-        message : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-
+        publishes a zmq message with the "commands" payload name.
+        :param message: message to be published
+        :return: None
         """
         payload = {}
         payload["payload_name"] = "commands"
@@ -135,13 +117,13 @@ class ethernet_sender(Thread):
 
         """
         if reduce:
-            return self.box.get_reduced_string()
+            return self.box.get_reduced()
         else:
-            return self.box.get_full_string()
+            return self.box.get_full()
 
     def pop_spesific_mesage(self, tag):
         """
-
+        gets and removes a spesific message from the stroage box. if given a tag.
         :param tag:
         :return:
         """
@@ -154,7 +136,7 @@ class ethernet_sender(Thread):
 
     def get_spesific_mesage(self, tag):
         """
-
+        gets a spesific message from the stroage box. if given a tag.
         :param tag:
         :return:
         """
@@ -195,7 +177,7 @@ class ethernet_sender(Thread):
 
     def is_closed(self):
         """
-
+        checks if the socket is closed.
         :return:
         """
         return self.socket.closed

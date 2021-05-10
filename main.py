@@ -17,30 +17,40 @@ from payload_sender import ethernet_sender
 from sophusUtil import start_thread, print_frame
 
 print_frame("system starting!", ("connect echo, gps and sender."))
-
+"""
+Set up the Threads.
+"""
 box = Storage_Box("suitcase")
 sender = ethernet_sender('tcp://127.0.0.1:8787', box, 2)
 echo_server = nmea_server(port="COM2", baudrate=4800, storage_box=box, frequency=10)
 GPS_server = gps_server(port="COM31", baudrate=9600, storage_box=box, frequency=10)
 distance_calc = Distance_Calculator(box)
-
+"""
+start the Theads
+"""
 started_echo_server = start_thread(echo_server)
 started_gps_server = start_thread(GPS_server)
 started_sender = start_thread(sender)
 started_distance_calculator = start_thread(distance_calc)
-
+"""
+print Statuses
+"""
 print_frame("connected to echo {}".format(echo_server),
             "connected to gps: {}".format(started_gps_server),
             "connected to sender {}".format(started_sender),
             "started dist calculator: {}".format(started_distance_calculator))
 last_time = time.monotonic()
-
+"""
+tries to restart comunication if it failes.
+"""
 while True:
     if (time.monotonic() - last_time > 30):
         if not started_echo_server or not started_gps_server:
             if not started_echo_server:
                 start_thread(echo_server)
             if not started_gps_server:
-                start_thread(gps_server)
+                start_thread(GPS_server)
+            started_echo_server = echo_server.is_alive()
+            started_gps_server = GPS_server.is_alive()
         last_time = time.monotonic()
     sender.connect()

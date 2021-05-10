@@ -26,6 +26,13 @@ class GPSserver(Thread):
         """
 
     def __init__(self, storage_box, baudrate, port, frequency):
+        """
+        initialzie the GPS server with storage box and serial port
+        :param storage_box:
+        :param baudrate:
+        :param port:
+        :param frequency:
+        """
         Thread.__init__(self)
         self.__ser = serial.Serial(port,
                                    baudrate,
@@ -38,6 +45,10 @@ class GPSserver(Thread):
         print(self.gps)
 
     def run(self):
+        """
+        runs the server, it works on a timer.
+        :return:
+        """
         self.set_up()
         last_print = time.monotonic()
         while True:
