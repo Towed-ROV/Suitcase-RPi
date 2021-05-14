@@ -1,5 +1,12 @@
 import numpy as np
-
+from nmea_data.nmea_structure import nmea_sensor
+s = nmea_sensor("MTW","Mean_Temprature_Water",["temprature",
+            "Unit",
+            "temprature",
+            "Unit",
+            "temprature",
+            "Unit"],lambda x :abs(x))
+print(s.name,s.condition(-2),s.structure)
 data_types = {"MTW": "Mean_Temprature_Water",
               "DPT": "depth_beneath_boat",
               "DBT": "depth_beneath_boat",
@@ -319,10 +326,10 @@ data_values = {
             "ground_distance_since_reset",
             "Unit"]}
 
-CONDITIONS = {"depth_under_boat": lambda v: -1 if v is None else v,
-              "depth_under_boat_in_Fathoms": lambda v: -1 if v is None else v,
-              "depth_under_boat_in_feet": lambda v: -1 if v is None else v,
-              "depth_under_transuducer": lambda v: -1 if v is None else v, }
+CONDITIONS = {"depth_under_boat": lambda v: -1 if v is None else abs(v),
+              "depth_under_boat_in_Fathoms": lambda v: -1 if v is None else abs(v),
+              "depth_under_boat_in_feet": lambda v: -1 if v is None else abs(v),
+              "depth_under_transuducer": lambda v: -1 if v is None else abs(v), }
 
 
 def get_data_type(identifier):
