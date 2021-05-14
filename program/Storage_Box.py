@@ -30,7 +30,7 @@ class Storage_Box:
         self.origin = origin
         self.send_tags = ["depth_beneath_boat", "latitude", "speed",
                           "north_south", "longitude", "north_south",
-                          "temprature_in_C", "depth_under_transuducer"]
+                          "temprature_in_C", "depth_under_transuducer", "echo_error", "temprature","rov_lat","rov_lon"]
         self.discard_tags = []
         self.lock = threading.RLock()
 
@@ -66,7 +66,8 @@ class Storage_Box:
             except Exception as e:
                 print(format(e))
 
-    def __get_value(self, key, dict):
+    @staticmethod
+    def __get_value(key, dict):
         """
         returns a value from a spesific sensor. the sensor is s dictonary
         :param value_name:
@@ -97,8 +98,7 @@ class Storage_Box:
         :return: string with old parisng
         """
         with self.lock:
-            ret_lst = []
-            ret_lst.append("ekkolodd")
+            ret_lst = ["ekkolodd"]
             for k in self.keys():
                 ret_lst.extend(self.get_sensor_old(k))
             return ret_lst
@@ -153,7 +153,7 @@ class Storage_Box:
             sensor = self.get_sensor(keys)
             if isinstance(sensor, dict):
                 for key, values in sensor.items():
-                    payload_list.append(self.__add_sensor("%s" % (key), values))
+                    payload_list.append(self.__add_sensor("%s" % key, values))
             else:
                 payload_list.append(self.__add_sensor(keys, sensor))
         return payload_list
@@ -172,21 +172,22 @@ class Storage_Box:
 
             sensor = self.get_sensor(keys)
             if isinstance(sensor, dict):
-                if (any(tag in keys or tag in sensor.keys() for tag in tags)):
+                if any(tag in keys or tag in sensor.keys() for tag in tags):
                     iter_sensor = sensor.copy()
                     for sub_keys in iter_sensor.keys():
                         if not any(sub_keys in tag or tag in sub_keys
                                    for tag in tags):
                             del sensor[sub_keys]
                     for key, values in sensor.items():
-                        payload_list.append(self.__add_sensor("%s" % (key), values))
+                        payload_list.append(self.__add_sensor("%s" % key, values))
 
-            elif (not sensor is None):
+            elif sensor is not None:
                 if any(tag in keys for tag in tags):
                     payload_list.append(self.__add_sensor(keys, sensor))
         return payload_list
 
-    def __add_sensor(self, name, sensor):
+    @staticmethod
+    def __add_sensor(name, sensor):
         """
         adds a sensor to a dictonary with the parsing for theis system, a sensor can have multiple key value pairs,
         since this is common in the NMEA protocoll.
@@ -194,9 +195,7 @@ class Storage_Box:
         :param sensor: the valuesd of the sensors-
         :return: a dictonary with sensor values
         """
-        sensor_dict = {}
-        sensor_dict["name"] = name
-        sensor_dict["value"] = None
+        sensor_dict = {"name": name, "value": None}
         if isinstance(sensor, dict):
             if len(sensor) > 1:
                 value_dict = {}
@@ -226,7 +225,7 @@ class Storage_Box:
         :return:
         """
         for key, value in self.__json_data.items():
-            if (tag in key and subtag in value):
+            if tag in key and subtag in value:
                 return key
 
     def __get_name_by_tag(self, tag):
@@ -257,7 +256,7 @@ class Storage_Box:
             ret = self.__json_data.get(name)
             if isinstance(ret, dict):
                 return ret
-            elif not ret == None:
+            elif ret is not None:
                 return {name: ret}
 
     def pop_sensor_from_tag(self, tag, subtag=None):
@@ -279,7 +278,8 @@ class Storage_Box:
                 ret = self.__json_data.pop(name)
                 if isinstance(ret, dict):
                     return ret
-                elif not ret == None:
+                elif ret is not None:
                     return {name: ret}
-            except KeyError as key_e:
-                print_frame("none existant key: ", key_e)
+            except KeyError:# as key_e:
+                pass
+                # print_frame("none existant key: ", key_e)

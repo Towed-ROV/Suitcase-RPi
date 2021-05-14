@@ -319,10 +319,10 @@ data_values = {
             "ground_distance_since_reset",
             "Unit"]}
 
-CONDITIONS = {"depth_under_boat": lambda v: -1 if v == None else v,
-              "depth_under_boat_in_Fathoms": lambda v: -1 if v == None else v,
-              "depth_under_boat_in_feet": lambda v: -1 if v == None else v,
-              "depth_under_transuducer": lambda v: -1 if v == None else v, }
+CONDITIONS = {"depth_under_boat": lambda v: -1 if v is None else v,
+              "depth_under_boat_in_Fathoms": lambda v: -1 if v is None else v,
+              "depth_under_boat_in_feet": lambda v: -1 if v is None else v,
+              "depth_under_transuducer": lambda v: -1 if v is None else v, }
 
 
 def get_data_type(identifier):
@@ -347,7 +347,7 @@ def set_spesial_conditions(msg):
     for key, condition in CONDITIONS.items():
         if key in msg:
             msg[key] = condition(msg[key])
-            if msg[key] == None:
+            if msg[key] is None:
                 print("found none")
 
     return msg
@@ -390,5 +390,5 @@ def add_names(ordered_data, data_id, data):
         if data_id in data_values.keys() and i < len(data_values[data_id]):
             ordered_data[data_values[data_id][i]] = value
         else:
-            ordered_data["value_%s" % (i)] = value
+            ordered_data["%s_value_%s" %(data_id, i)] = value
     return ordered_data

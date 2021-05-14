@@ -95,7 +95,8 @@ class NMEA_parser:
         # parses and returns the sentence
         return self.parse_nmea_sentence(sentence)
 
-    def nmea_strip(self, raw_sentence):
+    @staticmethod
+    def nmea_strip(raw_sentence):
         """
 
         :param raw_sentence:
@@ -115,7 +116,8 @@ class NMEA_parser:
         # strips the message down to the NMEA sentence
         return raw_sentence[start + 1:stop]
 
-    def __clean_data(self, data):
+    @staticmethod
+    def __clean_data(data):
         """
         Takes an input of a parsed NMEA sentence, thecks if a value is a number, or if it has a value. returns a list with
         string numbers changed to float and empty strings changed to None.
@@ -124,7 +126,8 @@ class NMEA_parser:
         """
         return [None if not v or v == '.' else float(v) if all((c in set('1234567890.')) for c in v) else v for v in data]
 
-    def __order_data(self, data, data_id):
+    @staticmethod
+    def __order_data(data, data_id):
         """
 
         :param data:

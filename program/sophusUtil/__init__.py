@@ -1,6 +1,7 @@
 import inspect
 import math
 from math import cos, sin, sqrt, asin
+import serial
 
 line_d = inspect.currentframe
 PI = math.pi  # pi
@@ -21,7 +22,6 @@ rad_to_deg = lambda rad: float(rad) * (180 / PI)
 def print_frame(*args):
     """
     Args:
-        f (line_d):
         *args:
     """
     f = inspect.currentframe().f_back
@@ -50,10 +50,12 @@ def normalize_dict(dic):
 
 
 def start_thread(thread):
-    """
-    starts runing a thread for serial communication. handles exption connected to the starting of the tread.
+    """starts runing a thread for serial communication. handles exption
+    connected to the starting of the tread. :param thread: the thread that
+    starts.
+
     Args:
-        thread: the thread that starts.
+        thread:
     """
     connected = False
     try:

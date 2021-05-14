@@ -4,10 +4,10 @@ Created on Wed Mar 10 22:42:29 2021.
 
 @author: sophu
 """
-from threading import Thread
-import zmq
 import time
-import json
+from threading import Thread
+
+import zmq
 
 
 class ethernet_sender(Thread):
@@ -28,7 +28,7 @@ class ethernet_sender(Thread):
         self.ip = ip
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
-        self.connect()
+        self.socket.bind(self.ip)
         self.box = storage_box
         self.frequency = frequncy
 
@@ -42,10 +42,8 @@ class ethernet_sender(Thread):
                 if self.is_closed():
                     print("socket is closed", self.is_closed())
                 start = time.process_time()
-
                 self.send_sensors()
                 self.send_commands()
-
                 dt = start - time.process_time()
                 if 1 / self.frequency > dt:
                     time.sleep(1 / self.frequency - dt)
@@ -70,10 +68,13 @@ class ethernet_sender(Thread):
         :return:
         """
         message = self.pop_spesific_mesage("has_traveled_set_distance")
-        if len(message) and message[0]['value']:
-            print(self.get_spesific_mesage("depth_beneath_boat"))
-            message[0].update({"depth_beneath_boat", self.get_spesific_mesage("depth_beneath_boat")})
-            self.publish_command(message)
+        if len(message) > 0:
+            # print(message[0]['value'])
+            if message[0]['value']:
+                # print(message, self.get_spesific_mesage("depth_beneath_boat"))
+                # print(message, self.get_spesific_mesage("depth_beneath_boat"))
+                # message[0].update({"depth_beneath_boat", self.get_spesific_mesage("depth_beneath_boat")})
+                self.publish_command(message)
 
     def publish_sensor(self, message):
         """
@@ -81,11 +82,7 @@ class ethernet_sender(Thread):
         :param message: message to be published
         :return: None
         """
-        payload = {}
-        payload["payload_name"] = "sensor_data"
-        payload["payload_data"] = message
-        print("sending:", payload, "\n")
-        self.socket.send_json(payload)
+        self.send("sensor_data", message)
 
     def publish_command(self, message):
         """
@@ -93,11 +90,17 @@ class ethernet_sender(Thread):
         :param message: message to be published
         :return: None
         """
-        payload = {}
-        payload["payload_name"] = "commands"
-        payload["payload_data"] = message
-        print("sending: \n", payload, message)
-        self.socket.send_string(json.dumps(payload))
+        self.send("commands", message)
+
+    def send(self, payload_type, message):
+        """
+        publsihes the a message over zmq
+        :param payload_type: the type of the payload.
+        :param message: the data ofthe payload
+        """
+        payload = {"payload_name": payload_type, "payload_data": message}
+        print("sending: \n", payload)
+        self.socket.send_json(payload)
 
     def get_message(self, reduce=False):
         """

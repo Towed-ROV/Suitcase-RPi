@@ -5,8 +5,8 @@ Created on Wed Feb  3 11:22:13 2021
 @author: sophu
 """
 
-from NMEA_0183_parser import NMEA_parser
-from Storage_box_RPi4 import Storage_Box
+from NMEA_serial.NMEA_0183_parser import NMEA_parser
+from Storage_Box import Storage_Box
 from Distance_Calculator import Distance_Calculator
 import time
 
@@ -16,7 +16,10 @@ def space():
 
 
 def test():
-    # ____________________NMEA PARSER
+    """
+    just a colection of unit tests.
+    :return:
+    """
 
     a = NMEA_parser()
     b = Storage_Box("suitcase")
