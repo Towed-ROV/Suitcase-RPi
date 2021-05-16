@@ -42,7 +42,7 @@ class GPSserver(Thread):
         self.box = storage_box
         self.freq = frequency
         self.gps = adafruit_gps.GPS(self.__ser, debug=False)
-        print(self.gps)
+        #print(self.gps)
 
     def run(self):
         """runs the server, it works on a timer. :return:"""

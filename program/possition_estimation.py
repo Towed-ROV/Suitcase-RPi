@@ -13,6 +13,7 @@ class possition_estimation(Thread):
         self.last_lat = 0
         self.last_lon = 0
         self.frequency = frequency
+        self.dir= 0
 
     def run(self):
         while True:
@@ -20,15 +21,20 @@ class possition_estimation(Thread):
             start = monotonic()
             lat = self.box.get_sensor_from_tag("gps", "latitude")
             lon = self.box.get_sensor_from_tag("gps", "longitude")
-            depth = self.box.get_sensor_from_tag("depth")
+            depth = self.box.get_sensor_from_tag("depth_rov")
             if lat and lon and depth is not None:
                 # print("lat,lon", lat, lon)
+
                 lat = float(lat["latitude"])
                 lon = float(lon["longitude"])
-                depth = float(depth["depth"])
-                dir = atan((lat - float(self.last_lat)) / (lon - self.last_lon))
-
+                depth = float(depth["depth_rov"])
+                if not self.last_lon == lon or self.last_lat ==lat:
+                    #print(self.last_lon , lon , self.last_lat ,lat)
+                    self.dir = atan((lat - float(self.last_lat)) / (((lon - float(self.last_lon)))))
+                    self.last_lat = lat
+                    self.last_lon = lon
                 self.__estimate_pos(lat, lon, depth, dir)
+
             sleep(1 / self.frequency - (monotonic() - start))
 
     def __estimate_pos(self, lat, lon, depth, dir):

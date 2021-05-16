@@ -374,11 +374,11 @@ def get_unit_indecies(ordered_data, data_id, data):
             data_structure = data_values[data_id].copy()
             if len(data_structure) > len(data):
                 data_structure = data_structure[0:len(data)]
-            print(data_structure, data_id, data)
+            #print(data_structure, data_id, data)
             indexis = np.array([i for i, s in enumerate(data_structure) if s == "Unit"])
-            print(indexis, len(data))
+            #print(indexis, len(data))
             indexis = indexis[0:len(data) - 1]
-            print(indexis, len(data))
+            #print(indexis, len(data))
             for i in indexis[::-1]:
                 s = "%s_in_%s" % (data_values[data_id][i - 1], data.pop(i))
                 ordered_data[s] = data.pop(i - 1)

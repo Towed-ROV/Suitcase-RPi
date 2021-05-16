@@ -1,7 +1,7 @@
 from threading import Thread
 from Storage_Box import Storage_Box
 from sophusUtil import deg_to_rad, earth_radius_at_lat, calc_big_circle_dist
-import time
+from time import monotonic,sleep
 
 
 class Distance_Calculator(Thread):
@@ -9,7 +9,7 @@ class Distance_Calculator(Thread):
     distance is has traveld using the haversine formulat.
     """
 
-    def __init__(self, box: Storage_Box, start_lat: float = 62.5, to_travel: float = 10):
+    def __init__(self, box: Storage_Box, start_lat: float = 62.5, to_travel: float = 10,freq:float=5):
         """initalizer starts the system and calculates the radius of the earth
         at the provided location :param box: StorageBox :param start_lat: float
         the latitude that is provided :param to_travel: float the meters the
@@ -27,12 +27,21 @@ class Distance_Calculator(Thread):
         self.earth_radius = earth_radius_at_lat(start_lat)
         self.to_travel = to_travel
         self.getmsg = lambda b: {"has_traveled_set_distance": b}
+        self.freq = freq
 
     def run(self):
         while True:
+            s = monotonic()
             traveld = self.check_dist()
-            self.box.update(self.getmsg(traveld))
-            time.sleep(1)
+            msg= self.getmsg(traveld)
+            if traveld:
+                print(msg)
+            self.box.update(msg)
+            ds =1/self.freq -( monotonic()-s)
+            if ds>0:
+                sleep(ds)
+
+
 
     def calculate_dist(self, lat1, lon1):
         """calculates the distance traveld since the last v :param lat1: :param
@@ -59,6 +68,7 @@ class Distance_Calculator(Thread):
             lon = gps_lon["longitude"]
             lat = gps_lat["latitude"]
             dist = self.calculate_dist(lat, lon)
+            #print(dist,self.to_travel)
             if abs(dist) >= self.to_travel:
                 self.last_lon = deg_to_rad(lon)
                 self.last_lat = deg_to_rad(lat)

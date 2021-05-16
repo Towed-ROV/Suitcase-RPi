@@ -21,12 +21,15 @@ print_frame("system starting!", "connect echo, gps and sender.")
 Set up the Threads.
 """
 box = Storage_Box("suitcase")
-sender = ethernet_sender('tcp://127.0.0.1:8790', box, 2)
-echo_server = nmea_server(port="COM2", baudrate=4800, storage_box=box, frequency=2, name="echo_lod")
-GPS_server = gps_server(port="COM31", baudrate=9600, storage_box=box, frequency=2)
-position_calc = possition_estimation(box=box, cable_length=200, frequency=2)
-distance_calc = Distance_Calculator(box)
-message_reciever = MessageReceiver(box)
+
+# simulation_time=13/2 #time of one simulation second set to 1 for physical operation
+sys_freq =20
+sender = ethernet_sender('tcp://127.0.0.1:8790', box, sys_freq)
+echo_server = nmea_server(port="COM2", baudrate=4800, storage_box=box, frequency=sys_freq, name="echo_lod")
+GPS_server = gps_server(port="COM31", baudrate=9600, storage_box=box, frequency=sys_freq)
+position_calc = possition_estimation(box=box, cable_length=200, frequency=sys_freq)
+distance_calc = Distance_Calculator(box,freq=sys_freq)
+message_reciever = MessageReceiver(box,freq=sys_freq)
 """
 start the Theads
 """
@@ -50,7 +53,7 @@ tries to restart comunication if it failes.
 has_error = False
 while True:
     dt = time.monotonic() - last_time
-    if dt > 5:
+    if dt > 15:
         if not running_echo_server or not running_gps_server:
             if not running_echo_server:
                 echo_server.stop()
