@@ -2,7 +2,7 @@ import inspect
 import math
 from math import cos, sin, sqrt, asin
 import serial
-
+import traceback
 line_d = inspect.currentframe
 PI = math.pi  # pi
 EARTH_CIRCUMFERENCE_M = 4.0075E4  # earth sicumfrence in meters
@@ -60,13 +60,17 @@ def start_thread(thread):
     """
     connected = False
     try:
-        thread.daemon = True
+        if not thread.daemon:
+            thread.daemon = True
         thread.start()
+
         connected = True
-    except serial.serialutil.SerialException as e:
-        print(format(e))
+    except serial.serialutil.SerialException:
+        traceback.print_exc()
         return connected
-    except Exception as e:
-        print(format(e))
+    except RuntimeError:
+        traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
         return connected
     return connected

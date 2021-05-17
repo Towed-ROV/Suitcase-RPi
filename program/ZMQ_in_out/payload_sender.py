@@ -6,7 +6,7 @@ Created on Wed Mar 10 22:42:29 2021.
 """
 import time
 from threading import Thread
-
+import traceback
 import zmq
 
 
@@ -49,9 +49,9 @@ class ethernet_sender(Thread):
                     time.sleep(1 / self.frequency - dt)
 
             except ValueError as e:
-                print(format(e))
+                traceback.print_exc()
             except TypeError as e:
-                print(format(e))
+                traceback.print_exc()
 
     def send_sensors(self):
         """
@@ -177,7 +177,7 @@ class ethernet_sender(Thread):
                 print("error: socket closed")
                 self.socket.bind(self.ip)
             except Exception as e:
-                print(format(e))
+                traceback.print_exc()
 
     def is_closed(self):
         """

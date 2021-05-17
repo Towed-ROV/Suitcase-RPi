@@ -1,6 +1,6 @@
 import pynmea2
 from nmea_data import get_data_type, set_spesial_conditions, get_unit_indecies, add_names
-
+import traceback
 """
 Created on Wed Jan 27 2021
 
@@ -59,13 +59,13 @@ class NMEA_parser:
             return parsed_json
 
         except pynmea2.ParseError as e:
-            print('parser error: ', format(e))
+            traceback.print_exc()
             self.__parser_error_count = self.__parser_error_count + 1
             print('parser error count: ', self.__parser_error_count)
             raise Exception(format(e))
 
         except TypeError as e:
-            print('parser error: ', format(e))
+            traceback.print_exc()
             print('got type: ', type(sentence))
             self.__parser_error_count = self.__parser_error_count + 1
             print('parser error count: ', self.__parser_error_count)

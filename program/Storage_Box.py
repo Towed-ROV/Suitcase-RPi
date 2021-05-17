@@ -8,7 +8,7 @@ Created on Sun Jan 31 13:49:29 2021
 
 import threading
 from sophusUtil import print_frame
-
+import traceback
 
 class Storage_Box:
     """
@@ -64,7 +64,7 @@ class Storage_Box:
             try:
                 return self.__json_data[key]
             except Exception as e:
-                print(format(e))
+                traceback.print_exc()
 
     @staticmethod
     def __get_value(key, dict):
@@ -281,5 +281,6 @@ class Storage_Box:
                 elif ret is not None:
                     return {name: ret}
             except KeyError:# as key_e:
+                #traceback.print_exc()
                 pass
                 # print_frame("none existant key: ", key_e)

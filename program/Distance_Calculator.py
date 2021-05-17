@@ -2,7 +2,7 @@ from threading import Thread
 from Storage_Box import Storage_Box
 from sophusUtil import deg_to_rad, earth_radius_at_lat, calc_big_circle_dist
 from time import monotonic,sleep
-
+import traceback
 
 class Distance_Calculator(Thread):
     """class that gets the gps cordinates from the system and calculates the
@@ -31,15 +31,18 @@ class Distance_Calculator(Thread):
 
     def run(self):
         while True:
-            s = monotonic()
-            traveld = self.check_dist()
-            msg= self.getmsg(traveld)
-            if traveld:
-                print(msg)
-            self.box.update(msg)
-            ds =1/self.freq -( monotonic()-s)
-            if ds>0:
-                sleep(ds)
+            try:
+                s = monotonic()
+                traveld = self.check_dist()
+                msg= self.getmsg(traveld)
+                if traveld:
+                    print(msg)
+                self.box.update(msg)
+                ds =1/self.freq -( monotonic()-s)
+                if ds>0:
+                    sleep(ds)
+            except:
+                traceback.print_exc()
 
 
 

@@ -9,6 +9,7 @@ import time
 import serial
 from threading import Thread
 from pynmea2 import NMEASentence
+import traceback
 
 
 class server(Thread):
@@ -63,6 +64,7 @@ class server(Thread):
                     message = self.get_message()
                     delivered = self.box.update(message)
                     last = current
+                    print(message)
                     if not delivered:
                         self.reciving = False
                     else:
@@ -72,7 +74,7 @@ class server(Thread):
                     # print("ImpoSleep", dt, 1 / self.frequency)
                     time.sleep(self.frequency - dt)
             except ValueError as e:
-                print(format(e))
+                traceback.print_exc()
 
     @staticmethod
     def __get_current_time_str():
@@ -113,8 +115,10 @@ class server(Thread):
                 return parsed_data
 
         except serial.SerialException as e:
+            traceback.print_exc()
             self.retry('communication error: ', e)
         except UnicodeDecodeError as e:
+            traceback.print_exc()
             self.retry('decode error: ', e)
 
     def retry(self, error_type, error):
@@ -176,8 +180,8 @@ class server(Thread):
         try:
             return self.__ser.inWaiting() > 0
         except OSError as osErr:
+            traceback.print_exc()
             self.delivered = False
-            print(format(osErr))
             pass
 
     def send(self, msg: bytes):

@@ -8,6 +8,7 @@ import time
 import serial
 from threading import Thread
 import adafruit_gps
+import traceback
 
 
 class GPSserver(Thread):
@@ -56,7 +57,7 @@ class GPSserver(Thread):
                     self.update_box()
                     last_print = current
             except serial.serialutil.SerialException as e:
-                print(format(e))
+                traceback.print_exc()
 
     def update_box(self):
         if not self.gps.has_fix:
