@@ -1,6 +1,15 @@
+import numpy as np
+from nmea_data.nmea_structure import nmea_sensor
+s = nmea_sensor("MTW","Mean_Temprature_Water",["temprature",
+            "Unit",
+            "temprature",
+            "Unit",
+            "temprature",
+            "Unit"],lambda x :abs(x))
+print(s.name,s.condition(-2),s.structure)
 data_types = {"MTW": "Mean_Temprature_Water",
-              "DPT": "Depth_of_water",
-              "DBT": "Depth_below_Transducer",
+              "DPT": "depth_beneath_boat",
+              "DBT": "depth_beneath_boat",
               "GGA": "GPS_fix_data",
               "GLL": "GPS_Langitude/Logitude",
               "GSV": "Satelites_in_view",
@@ -43,11 +52,11 @@ data_values = {
             "Unit",
             "temprature",
             "Unit"],
-    "DPT": ["depth_under_transuducer",
+    "DPT": ["depth_beneath_boat",
             "Offsett"],
     "DBT": ["depth_under_boat_in_feet",
             "feet",
-            "depth_under_boat",
+            "depth_beneath_boat",
             "meter",
             "depth_under_boat_in_Fathoms",
             "fathoms"],
@@ -317,7 +326,76 @@ data_values = {
             "ground_distance_since_reset",
             "Unit"]}
 
-CONDITIONS = {"depth_under_boat": lambda v: -1 if v == None else v,
-              "depth_under_boat_in_Fathoms": lambda v: -1 if v == None else v,
-              "depth_under_boat_in_feet": lambda v: -1 if v == None else v,
-              "depth_under_transuducer": lambda v: -1 if v == None else v, }
+CONDITIONS = {"depth_under_boat": lambda v: -1 if v is None else abs(v),
+              "depth_under_boat_in_Fathoms": lambda v: -1 if v is None else abs(v),
+              "depth_under_boat_in_feet": lambda v: -1 if v is None else abs(v),
+              "depth_under_transuducer": lambda v: -1 if v is None else abs(v), }
+
+
+def get_data_type(identifier):
+    """
+    gets the data type of an NMEA string, given the identifier, the method returns a more human readable version of that string.
+    :param identifier:
+    :return:
+    """
+    if identifier in data_types:
+        return data_types[identifier]
+    else:
+        return "%s: %s \n" % ("unknow ID", identifier)
+
+
+def set_spesial_conditions(msg):
+    """
+    loads any contitions set int the nmea utils module, this function calls a lambda function. it is dependent on
+    the system. for example, the depth can be set to -1 instead of None. t
+    :param msg: the msg to set the contition off
+    :return: the returned message.
+    """
+    for key, condition in CONDITIONS.items():
+        if key in msg:
+            msg[key] = condition(msg[key])
+            if msg[key] is None:
+                print("found none")
+
+    return msg
+
+
+def get_unit_indecies(ordered_data, data_id, data):
+    """
+    gets points in nmea data that has the Unit clarifiacton, if it has, it is removed, and is added to the sensor.
+    in a normal nmea message it will change from for example Depth to depth_in_meters
+    :param ordered_data: a list of values that we want to add indicise to.
+    :param data_id: the id of the data.
+    :param data: the data to check
+    :return:
+    """
+    if data_id in data_values.keys():
+        if "Unit" in data_values[data_id]:
+            data_structure = data_values[data_id].copy()
+            if len(data_structure) > len(data):
+                data_structure = data_structure[0:len(data)]
+            #print(data_structure, data_id, data)
+            indexis = np.array([i for i, s in enumerate(data_structure) if s == "Unit"])
+            #print(indexis, len(data))
+            indexis = indexis[0:len(data) - 1]
+            #print(indexis, len(data))
+            for i in indexis[::-1]:
+                s = "%s_in_%s" % (data_values[data_id][i - 1], data.pop(i))
+                ordered_data[s] = data.pop(i - 1)
+    return ordered_data, data_id, data
+
+
+def add_names(ordered_data, data_id, data):
+    """
+    adds readable names to NMEA data.
+    :param ordered_data: the data we want to build.
+    :param data_id: the id of the nmea data.
+    :param data: the data we are building from.
+    :return:
+    """
+    for i, value in enumerate(data):
+        if data_id in data_values.keys() and i < len(data_values[data_id]):
+            ordered_data[data_values[data_id][i]] = value
+        else:
+            ordered_data["%s_value_%s" %(data_id, i)] = value
+    return ordered_data

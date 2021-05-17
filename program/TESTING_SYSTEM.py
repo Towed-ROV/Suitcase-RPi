@@ -5,8 +5,8 @@ Created on Wed Feb  3 11:22:13 2021
 @author: sophu
 """
 
-from NMEA_0183_parser import NMEA_parser
-from Storage_box_RPi4 import Storage_Box
+from NMEA_serial.NMEA_0183_parser import NMEA_parser
+from Storage_Box import Storage_Box
 from Distance_Calculator import Distance_Calculator
 import time
 
@@ -16,7 +16,10 @@ def space():
 
 
 def test():
-    # ____________________NMEA PARSER
+    """
+    just a colection of unit tests.
+    :return:
+    """
 
     a = NMEA_parser()
     b = Storage_Box("suitcase")
@@ -54,42 +57,42 @@ def test():
     rmsg2 = "$SDDPT,10,*56"
     msg0 = a.parse_raw_message("$SDDBT,10,f,10,M,10,F*29")
     b.update(msg0)
-    print("---------------- this->", b.get_reduced_string())
+    print("---------------- this->", b.get_reduced())
     msg0 = a.parse_raw_message("$SDDBT,12,f,10,M,10,F*2B")
 
     print("items: ", msg0)
     b.update(msg0)
     print("items: ", msg0)
     print("items: ", msg0.items())
-    print("---------------- this->", b.get_reduced_string())
+    print("---------------- this->", b.get_reduced())
     msg0 = a.parse_raw_message("$SDDBT,10,f,,M,,F*29")
     b.update(msg0)
 
-    print("---------------- this->", b.get_reduced_string())
+    print("---------------- this->", b.get_reduced())
     msg0 = a.parse_raw_message("$SDDBT,10,f,14,M,,F*2C")
     b.update(msg0)
 
-    print("---------------- this->", b.get_reduced_string())
+    print("---------------- this->", b.get_reduced())
     msg0 = a.parse_raw_message("$SDDBT,,f,10,M,10,F*28")
     b.update(msg0)
 
-    print("---------------- this->", b.get_full_string())
+    print("---------------- this->", b.get_full())
     msg0 = a.parse_raw_message("$SDVLW,10,N,5,NF*28")
     b.update(msg0)
 
-    print("---------------- this->", b.get_full_string())
+    print("---------------- this->", b.get_full())
     msg0 = a.parse_raw_message("$SDDBT,10,f,102,M,102,F*29")
     b.update(msg0)
 
-    print("---------------- this->", b.get_reduced_string())
-    print("---------------- this->", b.get_reduced_string())
+    print("---------------- this->", b.get_reduced())
+    print("---------------- this->", b.get_reduced())
     msg4 = a.parse_raw_message("$GPAAM,A,A,0.10,N,WPTNME*32")
     msg2 = a.parse_raw_message(rmsg2)
     print("nmea parser parsed/n %s \n as:\n %s\n" % (rmsg2, msg2))
 
     # StorageBOX
     b.update(msg0)
-    print("first message added to Box: \n", b.get_full_string())
+    print("first message added to Box: \n", b.get_full())
 
     b.update(msg4)
     b.update(msg2)
@@ -108,18 +111,18 @@ def test():
     b.update(None)
     b.update({"da": "ta"})
     space()
-    print(b.get_full_string())
+    print(b.get_full())
     space()
     print(b.get_in_old_style())
     space()
-    print(b.get_reduced_string())
+    print(b.get_reduced())
     # b.clear()
-    print(b.get_full_string())
+    print(b.get_full())
     b.update(msg0)
     b.update(msg1)
     b.update(msg2)
     b.update(msg4)
-    print(b.get_reduced_string())
+    print(b.get_reduced())
     print("_-----------_")
     print(b.get_sensor_from_tag("GPS", "latitude"))
     print(b.pop_sensor_from_tag("depth_of_water"))
@@ -140,7 +143,7 @@ def test():
     print("ch3ckd2:", dc.getmsg(dc.check_dist()))
     print(b.get_sensor_from_tag("depth_in_M"))
     b.clear()
-    print(b.get_full_string(), "was cleared")
+    print(b.get_full(), "was cleared")
     print("end")
 
 

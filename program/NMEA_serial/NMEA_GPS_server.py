@@ -8,24 +8,32 @@ import time
 import serial
 from threading import Thread
 import adafruit_gps
+import traceback
 
 
 class GPSserver(Thread):
     """Receives and parses NMEA 0183 messages from a serial port.
 
-    Then it stores the message in a storage box.
-    the NMEA parser can take a string input and return a more meaningful
-    version of the data.
+    Then it stores the message in a storage box. the NMEA parser can take a
+    string input and return a more meaningful version of the data.
+
         Defines the serial port and parser and other variables and constants.
 
         Args:
             port (string): the port that the server should connect to and read.
-            baudrate:
-            storage_box:
-            frequency:
-        """
+            baudrate: storage_box: frequency:
+    """
 
     def __init__(self, storage_box, baudrate, port, frequency):
+        """initialzie the GPS server with storage box and serial port :param
+        storage_box: :param baudrate: :param port: :param frequency:
+
+        Args:
+            storage_box:
+            baudrate:
+            port:
+            frequency:
+        """
         Thread.__init__(self)
         self.__ser = serial.Serial(port,
                                    baudrate,
@@ -35,9 +43,10 @@ class GPSserver(Thread):
         self.box = storage_box
         self.freq = frequency
         self.gps = adafruit_gps.GPS(self.__ser, debug=False)
-        print(self.gps)
+        #print(self.gps)
 
     def run(self):
+        """runs the server, it works on a timer. :return:"""
         self.set_up()
         last_print = time.monotonic()
         while True:
@@ -48,7 +57,7 @@ class GPSserver(Thread):
                     self.update_box()
                     last_print = current
             except serial.serialutil.SerialException as e:
-                print(format(e))
+                traceback.print_exc()
 
     def update_box(self):
         if not self.gps.has_fix:

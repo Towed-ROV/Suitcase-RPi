@@ -1,7 +1,8 @@
 import inspect
 import math
 from math import cos, sin, sqrt, asin
-
+import serial
+import traceback
 line_d = inspect.currentframe
 PI = math.pi  # pi
 EARTH_CIRCUMFERENCE_M = 4.0075E4  # earth sicumfrence in meters
@@ -12,16 +13,16 @@ earth_radius_at_lat = lambda lat: sqrt(
 pytagoras = lambda x, y: (x ** 2 + y ** 2) ** (1 / 2)
 pytagoras_round = lambda x, y, desimal: round(pytagoras(x, y), desimal)
 calc_big_circle_dist = lambda lat1, lat2, lon1, lon2, radius: (
-            2 * radius * asin(sqrt(sin((lat2 - lat1) / 2) ** 2 + cos(lat1) * cos(lat2) * sin((lon2 - lon1) / 2) ** 2)))
+        2 * radius * asin(sqrt(sin((lat2 - lat1) / 2) ** 2 + cos(lat1) * cos(lat2) * sin((lon2 - lon1) / 2) ** 2)))
+fast_meter_to_gps = lambda lat1, lon1, meterlon, meterlat: (lat1 + meterlat / 111_000, lon1 + meterlon / 111_000)
 print_line = lambda *args: print_frame(line_d().f_back, *args)
 deg_to_rad = lambda deg: float(deg) * (PI / 180)
 rad_to_deg = lambda rad: float(rad) * (180 / PI)
 
 
-def print_frame( *args):
+def print_frame(*args):
     """
     Args:
-        f (line_d):
         *args:
     """
     f = inspect.currentframe().f_back
@@ -50,20 +51,26 @@ def normalize_dict(dic):
 
 
 def start_thread(thread):
-    """
-    starts runing a thread for serial communication. handles exption connected to the starting of the tread.
+    """starts runing a thread for serial communication. handles exption
+    connected to the starting of the tread. :param thread: the thread that
+    starts.
+
     Args:
-        thread: the thread that starts.
+        thread:
     """
     connected = False
     try:
-        thread.daemon = True
+        if not thread.daemon:
+            thread.daemon = True
         thread.start()
+
         connected = True
-    except serial.serialutil.SerialException as e:
-        print(format(e))
+    except serial.serialutil.SerialException:
+        traceback.print_exc()
         return connected
-    except Exception as e:
-        print(format(e))
+    except RuntimeError:
+        traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
         return connected
     return connected

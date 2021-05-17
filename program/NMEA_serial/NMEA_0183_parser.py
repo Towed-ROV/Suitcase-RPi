@@ -1,7 +1,6 @@
 import pynmea2
-import numpy as np
-from nmea_data import data_types, data_values, CONDITIONS
-
+from nmea_data import get_data_type, set_spesial_conditions, get_unit_indecies, add_names
+import traceback
 """
 Created on Wed Jan 27 2021
 
@@ -51,41 +50,25 @@ class NMEA_parser:
             data.
 
         """
-        # print(sentence)
         try:
             parsed_sentence = self.parser.parse(sentence)
             msg_type = parsed_sentence.sentence_type
-
             data = self.__order_data(self.__clean_data(parsed_sentence.data), msg_type)
-            data_id = self.__get_data_type(msg_type)
+            data_id = get_data_type(msg_type)
             parsed_json = {data_id.lower(): data}
-
             return parsed_json
 
         except pynmea2.ParseError as e:
-            print('parser error: ', format(e))
+            traceback.print_exc()
             self.__parser_error_count = self.__parser_error_count + 1
             print('parser error count: ', self.__parser_error_count)
             raise Exception(format(e))
+
         except TypeError as e:
-            print('parser error: ', format(e))
+            traceback.print_exc()
             print('got type: ', type(sentence))
             self.__parser_error_count = self.__parser_error_count + 1
             print('parser error count: ', self.__parser_error_count)
-
-    def set_spesial_conditions(self, msg):
-        """
-
-        :param msg:
-        :return:
-        """
-        for key, condition in CONDITIONS.items():
-            if key in msg:
-                msg[key] = condition(msg[key])
-                if msg[key] == None:
-                    print("found none")
-
-        return msg
 
     def parse_raw_message(self, raw_sentence):
         """
@@ -112,7 +95,8 @@ class NMEA_parser:
         # parses and returns the sentence
         return self.parse_nmea_sentence(sentence)
 
-    def nmea_strip(self, raw_sentence):
+    @staticmethod
+    def nmea_strip(raw_sentence):
         """
 
         :param raw_sentence:
@@ -132,28 +116,18 @@ class NMEA_parser:
         # strips the message down to the NMEA sentence
         return raw_sentence[start + 1:stop]
 
-    def __clean_data(self, data):
+    @staticmethod
+    def __clean_data(data):
         """
-
-        :param data:
-        :return:
+        Takes an input of a parsed NMEA sentence, thecks if a value is a number, or if it has a value. returns a list with
+        string numbers changed to float and empty strings changed to None.
+        :param data: the data to clean and change.
+        :return: cleaned andchanged data
         """
-        return [None if not v else float(v)
-        if all((c in set('1234567890.'))
-               for c in v) else v for v in data]
+        return [None if not v or v == '.' else float(v) if all((c in set('1234567890.')) for c in v) else v for v in data]
 
-    def __get_data_type(self, identifier):
-        """
-
-        :param identifier:
-        :return:
-        """
-        if identifier in data_types:
-            return data_types[identifier]
-        else:
-            return "%s: %s \n" % ("unknow ID", identifier)
-
-    def __order_data(self, data, data_id):
+    @staticmethod
+    def __order_data(data, data_id):
         """
 
         :param data:
@@ -161,32 +135,7 @@ class NMEA_parser:
         :return:
         """
         ordered_data = {}
-        ordered_data, data_id, data = self.get_unit_indecies(ordered_data, data_id, data)
-        ordered_data = self.add_names(ordered_data, data_id, data)
-        ordered_data = self.set_spesial_conditions(ordered_data)
+        ordered_data, data_id, data = get_unit_indecies(ordered_data, data_id, data)
+        ordered_data = add_names(ordered_data, data_id, data)
+        ordered_data = set_spesial_conditions(ordered_data)
         return ordered_data
-
-    def add_names(self, ordered_data, data_id, data):
-        for i, value in enumerate(data):
-            if data_id in data_values.keys() and i < len(data_values[data_id]):
-                ordered_data[data_values[data_id][i]] = value
-            else:
-                ordered_data["value_%s" % (i)] = value
-        return ordered_data
-
-    def get_unit_indecies(self, ordered_data, data_id, data):
-        if data_id in data_values.keys():
-            if "Unit" in data_values[data_id]:
-                data_structure = data_values[data_id].copy()
-                if len(data_structure) > len(data):
-                    data_structure = data_structure[0:len(data)]
-                print(data_structure, data_id, data)
-                indexis = np.array([i for i, s in enumerate(data_structure) if s == "Unit"])
-                print(indexis, len(data))
-                indexis = indexis[0:len(data) - 1]
-                print(indexis, len(data))
-                for i in indexis[::-1]:
-                    s = "%s_in_%s" % (data_values[data_id][i - 1], data.pop(i))
-                    ordered_data[s] = data[i - 1]
-                    data.pop(i - 1)
-        return ordered_data, data_id, data
