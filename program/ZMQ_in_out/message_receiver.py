@@ -21,7 +21,9 @@ class MessageReceiver(Thread):
             try:
                 s = monotonic()
                 self.recv()
-                sleep(self.timer - (monotonic() - s))
+                dt = self.timer - (monotonic() - s)
+                if dt>0:
+                    sleep(dt)
             except zmq.ZMQError:
                 traceback.print_exc()
                 print('could not receive data')

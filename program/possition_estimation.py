@@ -30,8 +30,8 @@ class possition_estimation(Thread):
                     depth = float(depth["depth_rov"])
                     if not self.last_lon == lon or self.last_lat ==lat:
                         #print(self.last_lon , lon , self.last_lat ,lat)
-                        d1=(lat - float(self.last_lat))
-                        d2=(lon - float(self.last_lon))
+                        #d1=(lat - float(self.last_lat))
+                        #d2=(lon - float(self.last_lon))
                         self.direct = atan(sin(lat**2+lon**2)/cos(lat**2+lon**2))
                         self.last_lat = lat
                         self.last_lon = lon
@@ -51,6 +51,6 @@ class possition_estimation(Thread):
         x = sqrt(self.cable_length ** 2 - abs(depth) ** 2)
         travel = cos(direct) * x, sin(direct) * x
         rov_lat, rov_lon = fast_meter_to_gps(lat1=lat, lon1=lon, meterlat=travel[0], meterlon=travel[1])
-        print("lat:",lat,"rov_lat:",rov_lat)
+        #print("lat:",lat,"rov_lat:",rov_lat)
         self.box.update({"rov_lat": rov_lat})
         self.box.update({"rov_lon": rov_lon})

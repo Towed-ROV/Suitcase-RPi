@@ -35,8 +35,8 @@ class Distance_Calculator(Thread):
                 s = monotonic()
                 traveld = self.check_dist()
                 msg= self.getmsg(traveld)
-                if traveld:
-                    print(msg)
+                #if traveld:
+                    #print(msg)
                 self.box.update(msg)
                 ds =1/self.freq -( monotonic()-s)
                 if ds>0:

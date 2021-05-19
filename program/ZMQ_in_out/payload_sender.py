@@ -68,13 +68,9 @@ class ethernet_sender(Thread):
         :return:
         """
         message = self.pop_spesific_mesage('has_traveled_set_distance')
-        #print(message)
         if len(message) > 0:
-            # print(message[0]['value'])
             if message[0]['value']:
-                print(message, self.get_spesific_mesage("depth_beneath_boat"))
-                # print(message, self.get_spesific_mesage("depth_beneath_boat"))
-                # message[0].update({"depth_beneath_boat", self.get_spesific_mesage("depth_beneath_boat")})
+                print(message)
                 self.publish_command(message)
 
     def publish_sensor(self, message):

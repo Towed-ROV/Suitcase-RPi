@@ -64,15 +64,13 @@ class server(Thread):
                     message = self.get_message()
                     delivered = self.box.update(message)
                     last = current
-                    print(message)
+                    #print(message)
                     if not delivered:
                         self.reciving = False
                     else:
                         self.last_msg = current
                         self.reciving = True
-                else:
-                    # print("ImpoSleep", dt, 1 / self.frequency)
-                    time.sleep(self.frequency - dt)
+
             except ValueError as e:
                 traceback.print_exc()
 
@@ -111,15 +109,15 @@ class server(Thread):
         try:
             if self.ready():
                 msg = self.buffer_read()
+                print(msg)
                 parsed_data = self.__parser.parse_raw_message(msg)
                 return parsed_data
 
         except serial.SerialException as e:
             traceback.print_exc()
-            self.retry('communication error: ', e)
+
         except UnicodeDecodeError as e:
             traceback.print_exc()
-            self.retry('decode error: ', e)
 
     def retry(self, error_type, error):
         """tries to get a message again if the system fails, if it fails more

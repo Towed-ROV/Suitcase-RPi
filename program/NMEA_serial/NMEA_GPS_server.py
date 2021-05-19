@@ -53,9 +53,11 @@ class GPSserver(Thread):
             try:
                 current = time.monotonic()
                 self.gps.update()
-                if current - last_print > 1 / self.freq:
-                    self.update_box()
-                    last_print = current
+                #dt = self.freq-(current - last_print)
+                self.update_box()
+                last_print = current
+                #if dt>0:
+                 #   time.sleep(dt)
             except serial.serialutil.SerialException as e:
                 traceback.print_exc()
 

@@ -23,7 +23,7 @@ Set up the Threads.
 box = Storage_Box("suitcase")
 
 # simulation_time=13/2 #time of one simulation second set to 1 for physical operation
-sys_freq =5
+sys_freq =10
 sender = ethernet_sender('tcp://127.0.0.1:8790', box, sys_freq)
 echo_server = nmea_server(port="COM2", baudrate=4800, storage_box=box, frequency=sys_freq, name="echo_lod")
 GPS_server = gps_server(port="COM31", baudrate=9600, storage_box=box, frequency=sys_freq)
@@ -56,15 +56,17 @@ while True:
     if dt > 15:
         if not running_echo_server or not running_gps_server:
             if not running_echo_server:
-                echo_server.stop()
+                #echo_server.stop()
                 print("restarting echo")
-                start_thread(echo_server)
+                echo_server.run()
+                running_echo_server=True
             if not running_gps_server:
                 print("restarting gps")
-                gps_server.start()
+                gps_server.run()
+                running_gps_server=True
         elif time.monotonic() - echo_server.last_msg > 5:
-            box.update({"echo_error": "echo_lod_has_not_updated in {} sec".format(
-                round(time.monotonic() - echo_server.last_msg), 0)})
+            #box.update({"echo_error": "echo_lod_has_not_updated in {} sec".format(
+                #round(time.monotonic() - echo_server.last_msg), 0)})
             has_error = True
         elif has_error:
             box.pop_sensor_from_tag("echo_error")
