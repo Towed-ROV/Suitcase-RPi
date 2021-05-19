@@ -8,7 +8,6 @@ from NMEA_serial.NMEA_0183_parser import NMEA_parser
 import time
 import serial
 from threading import Thread
-from pynmea2 import NMEASentence
 import traceback
 
 
@@ -182,16 +181,6 @@ class server(Thread):
             self.delivered = False
             pass
 
-    def send(self, msg: bytes):
-        """sends data over the serial. :param msg: :return:
-
-        Args:
-            msg (bytes):
-        """
-        checksum = NMEASentence.checksum(msg)
-        msg += checksum
-        # print("sending: ", str(msg))
-        self.__ser.write(msg)
 
     def stop(self):
         """
